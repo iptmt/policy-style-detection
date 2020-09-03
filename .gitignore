@@ -1,0 +1,6 @@
+/**/dump
+/**/log
+/**/tmp
+/**/__pycache__
+*.pyc
+/**/ours
