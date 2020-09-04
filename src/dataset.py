@@ -6,7 +6,7 @@ import numpy as np
 from vocab import PAD_ID, BOS_ID, EOS_ID, PLH_ID, Vocab
 from torch.utils.data import Dataset
 
-from data_util import align_texts, noise_text_ids, filter_right_PLH_id, remove_PLH_id
+from data_util import align_texts, noise_text_ids, iter_samples
 
 
 class StyleDataset(Dataset):
@@ -92,26 +92,64 @@ class TemplateDataset(Dataset):
     
     @staticmethod
     def collate_fn_train(batch_samples):
-        for masked_ids, ids, removed_ids, inds = [], [], [], []
-        for s, ns, l in  zip(*batch_samples):
-            ms, s = filter_right_PLH_id(s, ns)
-            fs, i = remove_PLH_id(ms)
+        masked_ids, ids, removed_ids, inds, label_mlm, label_slot = [], [], [], [], [], []
+        for s, ns, l in  batch_samples:
+            ms, s, rs, i = iter_samples(s, ns)
+            masked_ids += ms
+            ids += s
+            label_mlm += [l] * len(ms)
+            removed_ids += rs
+            inds += i
+            label_slot += [l] * len(rs)
+        if masked_ids:
+            alg_masked_ids = torch.tensor(align_texts(masked_ids), dtype=torch.long)
+            alg_ids = torch.tensor(align_texts(ids), dtype=torch.long)
+            label_mlm = torch.tensor(label_mlm, dtype=torch.long)
+        else:
+            alg_masked_ids, alg_ids, label_mlm = None, None, None
+        alg_removed_ids = torch.tensor(align_texts(removed_ids), dtype=torch.long)
+        alg_inds = torch.tensor(align_texts(inds, pad_id=-1), dtype=torch.long)
+        label_slot = torch.tensor(label_slot, dtype=torch.long)
 
-        # aligned_sentences = torch.tensor(align_texts(sentences), dtype=torch.long)
-        # aligned_temps = torch.tensor(align_texts(temp_sentences), dtype=torch.long)
-        # ph_mask = (aligned_temps == PLH_ID).long()
-        # labels = torch.tensor(labels, dtype=torch.long)
-
-        return aligned_sentences, aligned_temps, ph_mask, labels
+        return alg_masked_ids, alg_ids, label_mlm, alg_removed_ids, alg_inds, label_slot
     
     @staticmethod
     def collate_fn_inf(batch_samples):
         sentences, temp_sentences, labels = zip(*batch_samples)
-        sentences = [[BOS_ID] + s + [EOS_ID] for s in sentences]
-        temp_sentences = [[BOS_ID] + s + [EOS_ID] for s in temp_sentences]
-
         temp_sentences = [list(filter(lambda x: x != PLH_ID, temp)) for temp in temp_sentences]
+
         aligned_sentences = torch.tensor(align_texts(sentences), dtype=torch.long)
         aligned_temps = torch.tensor(align_texts(temp_sentences), dtype=torch.long)
         labels = torch.tensor(labels, dtype=torch.long)
         return aligned_sentences, aligned_temps, labels
+
+
+
+if __name__ == "__main__":
+    import time
+    from data_util import mask_noise_file
+    from vocab import Vocab
+    from torch.utils.data import DataLoader
+
+    file = "../data/yelp/style.train.0"
+    outf = "../tmp/test.0"
+    mask_noise_file(file, outf, 1, 0.15)
+
+    vocab = Vocab.load("../dump/vocab_yelp.bin")
+
+    dataset = TemplateDataset([outf], vocab, None)
+    loader = DataLoader(dataset, 512, False, collate_fn=TemplateDataset.collate_fn_train)
+    cnt = 1
+    for a, b, c, d, e, f in loader:
+        if a is not None:
+            cnt += len(a)
+        print(cnt)
+        #     print(a)
+        #     print(b)
+        #     print(c)
+        # print(d)
+        # print(e)
+        # print(f)
+        # print("=" * 100)
+        # time.sleep(2)
+        # print(cnt)

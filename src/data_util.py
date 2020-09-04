@@ -1,4 +1,4 @@
-import random, time
+import random
 import numpy as np
 from vocab import PLH_ID, PLH, PAD_ID
 
@@ -17,7 +17,7 @@ def align_texts(texts, pad_id=PAD_ID, pad_mask=False):
 
 def mask_noise_file(input_file, output_file, label, p):
     lines = [line.strip() for line in open(input_file, 'r')]
-    noised_lines = [" ".join(mask_noise_text(line, p, PLH)) for line in lines]
+    noised_lines = [" ".join(mask_noise_text(line.split(), p, PLH)) for line in lines]
     with open(output_file, 'w+') as f:
         for l, nl in zip(lines, noised_lines):
             f.write('\t'.join([l, nl, str(label)]) + "\n")
@@ -32,9 +32,8 @@ def iter_samples(origin, ids):
     ms, s, ms_filter, idt = [], [], [], []
     origin, ids = np.array(origin), np.array(ids)
     while True:
-        inds = (ids == PAD_ID).astype(np.int) #TODO:
+        inds = (ids == PLH_ID).astype(np.int)
         mask = ((inds - (np.concatenate([inds[-1:], inds[:-1]]))) > 0).astype(np.int)
-        print(mask.sum())
         if mask.sum() == 0:
             ms_filter.append(origin.tolist())
             idt.append([0] * (origin.size - 1) + [1])
@@ -46,15 +45,14 @@ def iter_samples(origin, ids):
             s.append(b)
             ms_filter.append(c)
             idt.append(d)
-        time.sleep(0.5)
-        ids = (mask * origin) + (1 - inds) * ids
+        ids = (mask * origin) + (1 - mask) * ids
     return ms, s, ms_filter, idt
     
 
 def filter_right_PLH_id(origin, ids):
     new_ids, output, flag = [], [], 0
     for oid, id_ in zip(origin, ids):
-        if id_ != PAD_ID: #TODO:
+        if id_ != PLH_ID:
             new_ids.append(id_)
             output.append(oid)
             flag = 0
@@ -68,7 +66,7 @@ def filter_right_PLH_id(origin, ids):
 def remove_PLH_id(ids):
     new_ids, inds, flag = [], [], 0
     for id_ in ids[::-1]:
-        if id_ == PAD_ID: #TODO:
+        if id_ == PLH_ID:
             flag = 1
         else:
             new_ids.insert(0, id_,)
@@ -109,11 +107,11 @@ def noise_text_ids_(text, p, noise_id, noise_type):
 
 
 if __name__ == "__main__":
-    a = [100, 1, 2, 3, 4, 100]
-    b = [100, 0, 0, 1, 0, 100]
-    print(a)
-    print(b)
-    print('=' * 100)
+    a = [100, 11, 12, 13, 14, 15, 16, 17, 18, 19, 100]
+    b = [100, 4, 4, 13, 4, 15, 4, 4, 18, 19, 100]
+    # print(a)
+    # print(b)
+    # print('=' * 100)
     a, b, c, d = iter_samples(a, b)
     print(a)
     print(b)
