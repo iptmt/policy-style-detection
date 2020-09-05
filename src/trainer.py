@@ -76,13 +76,13 @@ class MaskTrainer:
     def train_clf(self, dl):
         self.clf.train()
         for x, x_, y in dl:
-            x, x_, y = embed_device([x, y_, y], self.dev)
+            x, x_, y = embed_device([x, x_, y], self.dev)
             pred = self.clf(x_)
 
             # weighted loss
-            # weights = (x_ != PAD_ID).sum(1).float() / (x != PAD_ID).sum(1).float()
+            weights = (x_ != PAD_ID).sum(1).float() / (x != PAD_ID).sum(1).float()
 
-            loss_cls_N = self.bce(pred, y.float())# * weights
+            loss_cls_N = self.bce(pred, y.float()) * weights
             loss_cls = loss_cls_N.mean()
 
             self.optimize_clf_0.zero_grad()

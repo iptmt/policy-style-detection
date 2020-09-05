@@ -43,7 +43,7 @@ class Masker(nn.Module):
         self.dropout = nn.Dropout(p=p_drop)
 
         # Reward function
-        self.f_r = lambda r_cp, r_sty: 10 * r_sty * (r_cp - delta)
+        self.f_r = lambda r_cp, r_sty: 100 * r_sty * (r_cp - delta)
 
     def forward(self, inp, label, pad_mask, k, clf):
         # embed

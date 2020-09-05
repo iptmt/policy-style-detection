@@ -7,7 +7,7 @@ from vocab import Vocab
 from dataset import StyleDataset
 from torch.utils.data import DataLoader
 
-from nets.classifier import TextCNN
+from nets.classifier import RelGAN_D
 from nets.masker import Masker
 from trainer import MaskTrainer
 from tool import create_logger
@@ -31,12 +31,12 @@ logger.info(f"mode: {mode}")
 
 # parameters
 #=============================================================#
-epochs_clf = 20
-epochs_masker = 50
+epochs_clf = 10
+epochs_masker = 20
 batch_size = 512
 max_seq_len = None # no limit
-noise_p = 0.2
-delta = 0.65
+noise_p = 0.15
+delta = 0.6
 
 rollouts = 8
 gamma = 0.85
@@ -54,7 +54,7 @@ vb = Vocab.load(vocab_file)
 
 # create model
 #=============================================================#
-clf = TextCNN(len(vb))
+clf = RelGAN_D(len(vb))
 masker = Masker(len(vb), delta)
 #=============================================================#
 
@@ -63,7 +63,7 @@ if mode == "train":
     #=============================================================#
     train_dataset = StyleDataset(train_files, vb, max_len=None)
     dev_dataset = StyleDataset(dev_files, vb, max_len=None)
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, collate_fn=StyleDataset.collate_fn_noise(noise_p, PAD_ID, "mask"))
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, collate_fn=StyleDataset.collate_fn_noise(noise_p, PAD_ID, "random"))
     dev_loader = DataLoader(dev_dataset, batch_size=batch_size, shuffle=False, collate_fn=StyleDataset.collate_fn)
     #=============================================================#
 
@@ -84,10 +84,10 @@ if mode == "train":
         logger.info(f"Dev Acc: {acc}")
         if acc > best_acc:
             logger.info(f"Update clf dump {int(acc*1e4)/1e4} <- {int(best_acc*1e4)/1e4}")
-            torch.save(clf.state_dict(), f"../dump/clf_{data}_{delta}.pth")
+            torch.save(clf.state_dict(), f"../dump/clf_{data}.pth")
             best_acc = acc
         logger.info("=" * 50)
-    clf.load_state_dict(torch.load(f"../dump/clf_{data}_{delta}.pth"))
+    clf.load_state_dict(torch.load(f"../dump/clf_{data}.pth"))
 
     del train_dataset, dev_dataset, train_loader, dev_loader
 
@@ -122,7 +122,7 @@ elif mode == "inf":
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, collate_fn=StyleDataset.collate_fn)
 
     masker.load_state_dict(torch.load(f"../dump/masker_{data}_{delta}.pth"))
-    clf.load_state_dict(torch.load(f"../dump/clf_{data}_{delta}.pth"))
+    clf.load_state_dict(torch.load(f"../dump/clf_{data}.pth"))
     model_trainer = MaskTrainer(masker, clf, dev, rollouts, gamma, None, None)
 
     # Inference
