@@ -2,9 +2,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from tool import LossClock
+from tool import LossClock, embed_device
 from data_util import align_texts
-from vocab import PLH_ID, PAD_ID
+from vocab import PLH_ID, PAD_ID, EOS_ID
 
 
 class MaskTrainer:
@@ -30,8 +30,7 @@ class MaskTrainer:
         self.masker.train()
         self.clf.eval()
         for _, (x, y, pad_mask) in enumerate(dl):
-            # transfer into device
-            x, y, pad_mask = x.to(self.dev), y.to(self.dev), pad_mask.to(self.dev)
+            x, y, pad_mask = embed_device([x, y, pad_mask], self.dev)
             # optimize masker
             probs, rewards = self.masker(x, y, pad_mask, self.rollout_num, self.clf)
             loss_r, r_mean = self.cal_loss_by_rewards(probs, rewards)
@@ -48,7 +47,7 @@ class MaskTrainer:
         self.clf.eval()
         rewards = []
         for _, (x, y, pad_mask) in enumerate(dl):
-            x, y, pad_mask = x.to(self.dev), y.to(self.dev), pad_mask.to(self.dev)
+            x, y, pad_mask = embed_device([x, y, pad_mask], self.dev)
             with torch.no_grad():
                 outputs = self.masker.sample_sequence(x, y, pad_mask, 1, self.clf)
                 for sent_set in outputs:
@@ -61,7 +60,7 @@ class MaskTrainer:
         self.clf.eval()
         f_obj = open(file_name, 'w+', encoding="utf-8")
         for _, (x, y, pad_mask) in enumerate(dl):
-            x, y, pad_mask = x.to(self.dev), y.to(self.dev), pad_mask.to(self.dev)
+            x, y, pad_mask = embed_device([x, y, pad_mask], self.dev)
             self.masker.eval()
             self.clf.eval()
             with torch.no_grad():
@@ -77,7 +76,7 @@ class MaskTrainer:
     def train_clf(self, dl):
         self.clf.train()
         for x, x_, y in dl:
-            x, x_, y = x.to(self.dev), x_.to(self.dev), y.to(self.dev)
+            x, x_, y = embed_device([x, y_, y], self.dev)
             pred = self.clf(x_)
 
             # weighted loss
@@ -124,38 +123,41 @@ class InsertLMTrainer:
         self.optimizer = optimizer
 
         self.ce = nn.CrossEntropyLoss(ignore_index=-1)
-        self.mse = nn.MSELoss(reduction="none")
-        self.clock = LossClock(["Loss_vocab", "Loss_position"], 200)
+        self.clock = LossClock(["Lv", "Lp"], 200)
     
     def train(self, dl):
         self.ilm.train()
-        for inp, out, pos, label in dl:
-            inp, out, pos, label = inp.to(self.dev), out.to(self.dev),\
-                 pos.to(self.dev), label.to(self.dev)
-            logits_v, logits_p = self.ilm(inp, label)
-            loss_v = self.ce(logits_v.reshape(-1, logits_v.size(-1)), out.reshape(-1))
-            loss_p = self.mse(logits_p, pos).sum(-1).mean()
+        for iv, ov, lv, ip, op, lp in dl:
+            iv, ov, lv, ip, op, lp = embed_device([iv, ov, lv, ip, op, lp], self.dev)
+            logits_v, logits_p = self.ilm(iv, lv, ip, lp)
+            if logits_v is not None:
+                loss_v = self.ce(logits_v.reshape(-1, logits_v.size(-1)), ov.reshape(-1))
+            else:
+                loss_v = 0
+            loss_p = self.ce(logits_p.reshape(-1, 2), op.reshape(-1))
 
             self.optimizer.zero_grad()
             (loss_v + loss_p).backward()
             self.optimizer.step()
 
-            self.clock.update({"Loss_vocab": loss_v.item(), "Loss_position": loss_p.item()})
+            self.clock.update({"Lv": loss_v.item(), "Lp": loss_p.item()})
     
     def evaluate(self, dl):
         self.ilm.eval()
         losses = []
-        for inp, out, pos, label in dl:
-            inp, out, pos, label = inp.to(self.dev), out.to(self.dev),\
-                 pos.to(self.dev), label.to(self.dev)
+        for iv, ov, lv, ip, op, lp in dl:
+            iv, ov, lv, ip, op, lp = embed_device([iv, ov, lv, ip, op, lp], self.dev)
             with torch.no_grad():
-                logits_v, logits_p = self.ilm(inp, label)
-            loss_v = self.ce(logits_v.reshape(-1, logits_v.size(-1)), out.reshape(-1))
-            loss_p = self.mse(logits_p, pos).sum(-1).mean()
+                logits_v, logits_p = self.ilm(iv, lv, ip, lp)
+            if logits_v is not None:
+                loss_v = self.ce(logits_v.reshape(-1, logits_v.size(-1)), ov.reshape(-1))
+            else:
+                loss_v = 0
+            loss_p = self.ce(logits_p.reshape(-1, 2), op.reshape(-1))
             losses.append(loss_v.item() + loss_p.item())
         return sum(losses) / len(losses)
     
-    def transfer(self, dl, file_name, vocab):
+    def inference(self, dl, file_name, vocab):
         self.ilm.eval()
         file = open(file_name, "w+", encoding="utf-8")
         def split_and_merge(tokens, positions, mask):
@@ -174,15 +176,19 @@ class InsertLMTrainer:
             return torch.tensor(new_input, dtype=torch.long, device=dev)
 
         for x, temp, label in dl:
-            x, temp, label = x.to(self.dev), temp.to(self.dev), label.to(self.dev)
-            out, mask = None, 1
+            x, temp, label = embed_device([x, temp, label], self.dev)
+            # out, mask = None, 1
             for _ in range(10):
+                # generate slots
                 with torch.no_grad():
-                    logits_v, logits_p = self.ilm(temp, 1 - label)
-                out = logits_v.argmax(-1) # B, L
-                positions = logits_p.argmax(-1) # B,
-                mask = (positions != 0).long() * mask
-                temp = split_and_merge(out, positions, mask)
+                    _, logits_p = self.ilm(None, None, temp, 1 - label)
+                # out = logits_v.argmax(-1) # B, L
+                borders = (temp == EOS_ID).long()
+                positions = logits_p.argmax(-1) # B, 2
+                # mask = (positions != 0).long() * mask
+                # temp = split_and_merge(out, positions, mask)
+
+                # fill in slots
             
             for s, s_tsf, lb in zip(x.unbind(0), out.unbind(0), label.unbind(0)):
                 s, s_tsf = vocab.tensor_to_sent(s), vocab.tensor_to_sent(s_tsf)

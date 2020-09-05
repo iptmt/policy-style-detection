@@ -45,3 +45,7 @@ def create_logger(log_path, log_name, debug=False):
     consoleHandler.setFormatter(logFormatter)
     rootLogger.addHandler(consoleHandler)
     return rootLogger
+
+def embed_device(tensor_list, device):
+    tensor_list = [tensor.to(device) for tensor in tensor_list]
+    return tuple(tensor_list)
