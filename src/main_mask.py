@@ -36,7 +36,7 @@ epochs_masker = 50
 batch_size = 512
 max_seq_len = None # no limit
 noise_p = 0.2
-delta = 0.62
+delta = 0.65
 
 rollouts = 8
 gamma = 0.85
@@ -63,7 +63,7 @@ if mode == "train":
     #=============================================================#
     train_dataset = StyleDataset(train_files, vb, max_len=None)
     dev_dataset = StyleDataset(dev_files, vb, max_len=None)
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, collate_fn=StyleDataset.collate_fn_noise(noise_p, PAD_ID, "random"))
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, collate_fn=StyleDataset.collate_fn_noise(noise_p, PAD_ID, "mask"))
     dev_loader = DataLoader(dev_dataset, batch_size=batch_size, shuffle=False, collate_fn=StyleDataset.collate_fn)
     #=============================================================#
 
@@ -113,7 +113,7 @@ if mode == "train":
             best_r = r
         logger.info("=" * 50)
     #=============================================================#
-elif mode == "test":
+elif mode == "inf":
     train_dataset = StyleDataset(train_files, vb)
     dev_dataset = StyleDataset(dev_files, vb)
     test_dataset = StyleDataset(test_files, vb)

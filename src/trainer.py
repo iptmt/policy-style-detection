@@ -80,9 +80,9 @@ class MaskTrainer:
             pred = self.clf(x_)
 
             # weighted loss
-            weights = (x_ != PAD_ID).sum(1).float() / (x != PAD_ID).sum(1).float()
+            # weights = (x_ != PAD_ID).sum(1).float() / (x != PAD_ID).sum(1).float()
 
-            loss_cls_N = self.bce(pred, y.float()) * weights
+            loss_cls_N = self.bce(pred, y.float())# * weights
             loss_cls = loss_cls_N.mean()
 
             self.optimize_clf_0.zero_grad()
@@ -123,7 +123,7 @@ class InsertLMTrainer:
         self.optimizer = optimizer
 
         self.ce = nn.CrossEntropyLoss(ignore_index=-1)
-        self.clock = LossClock(["Lv", "Lp"], 200)
+        self.clock = LossClock(["Lv", "Lp"], 100)
     
     def train(self, dl):
         self.ilm.train()
@@ -160,41 +160,45 @@ class InsertLMTrainer:
     def inference(self, dl, file_name, vocab):
         self.ilm.eval()
         file = open(file_name, "w+", encoding="utf-8")
-        def split_and_merge(tokens, positions, mask):
+
+        def insert_slots(tokens, positions, borders):
             new_input = []
             dev = tokens.device
-            tokens = tokens.cpu().numpy().tolist()
-            for ts, ps, m in zip(tokens, positions.unbind(0), mask.unbind(0)):
-                ps, m = ps.item(), m.item()
-                if m == 0 or ts[ps] == PAD_ID:
-                    new_input.append(ts)
-                    continue
-                ts = ts[:ps] + [PLH_ID] + ts[ps:]
-                ts = list(filter(lambda t: t != PAD_ID, ts))
-                new_input.append(ts)
+            tokens, positions = tokens.cpu().numpy().tolist(), positions.cpu().numpy().tolist()
+            for ts, ps, b in zip(tokens, positions, borders.unbind(0)):
+                new_sentence = []
+                for idx, (t, p) in enumerate(zip(ts, ps)):
+                    new_sentence.append(t)
+                    if idx >= b:
+                        break
+                    if p == 1:
+                        new_sentence.append(PLH_ID)
+                new_input.append(new_sentence)
             new_input = align_texts(new_input, pad_id=PAD_ID)
             return torch.tensor(new_input, dtype=torch.long, device=dev)
 
         for x, temp, label in dl:
             x, temp, label = embed_device([x, temp, label], self.dev)
+            
             # out, mask = None, 1
             for _ in range(10):
                 # generate slots
                 with torch.no_grad():
                     _, logits_p = self.ilm(None, None, temp, 1 - label)
-                # out = logits_v.argmax(-1) # B, L
-                borders = (temp == EOS_ID).long()
+                borders = (temp == EOS_ID).long().max(dim=-1)[1]
                 positions = logits_p.argmax(-1) # B, 2
-                # mask = (positions != 0).long() * mask
-                # temp = split_and_merge(out, positions, mask)
+                temp_m = insert_slots(temp, positions, borders)
 
                 # fill in slots
+                with torch.no_grad():
+                    logits_v, _ = self.ilm(temp_m, 1 - label, None, None)
+                temp = logits_v.argmax(-1)
             
-            for s, s_tsf, lb in zip(x.unbind(0), out.unbind(0), label.unbind(0)):
+            for s, s_tsf, lb in zip(x.unbind(0), temp.unbind(0), (1 - label).unbind(0)):
                 s, s_tsf = vocab.tensor_to_sent(s), vocab.tensor_to_sent(s_tsf)
                 file.write(
                     " ".join(s) + "\t" +\
                     " ".join(s_tsf) + "\t" +\
-                    str((1 - lb).item()) + "\n"
+                    str(lb.item()) + "\n"
                 )
         file.close()
