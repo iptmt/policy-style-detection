@@ -78,11 +78,11 @@ class TextCNN(nn.Module):
 
         hw = self.highway(x)
 
-        x = F.sigmoid(hw) * F.relu(hw) + (1 - F.sigmoid(hw) * x)
+        x = torch.sigmoid(hw) * F.relu(hw) + (1 - torch.sigmoid(hw) * x)
 
         x = self.feat2out(self.dropout(x))
 
-        return F.sigmoid(self.out2logits(x).squeeze(1))
+        return torch.sigmoid(self.out2logits(x).squeeze(1))
 
 
 
