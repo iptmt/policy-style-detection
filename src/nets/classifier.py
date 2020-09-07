@@ -53,20 +53,19 @@ class RelGAN_D(nn.Module):
 
 
 class TextCNN(nn.Module):
-    def __init__(self, vocab_size, emb_dim=192, 
-                       kernels=[3,4,5], kernel_number=[128,128,128], p_drop=0.5):
+    def __init__(self, vocab_size, emb_dim=192,
+                       kernels=[3,5,7], kernel_number=[64,64,64], p_drop=0.5):
         super().__init__()
         self.embedding = nn.Embedding(vocab_size, emb_dim, padding_idx=0)
         self.convs = nn.ModuleList(
             [nn.Conv2d(1, number, (size, emb_dim), padding=(size-1, 0)) for (size, number) in zip(kernels, kernel_number)]
         )
+
         self.dropout= nn.Dropout(p_drop)
 
-        self.fn = nn.Sequential(
-            nn.Linear(sum(kernel_number), 1),
-            nn.Dropout(p_drop),
-            nn.Sigmoid()
-        )
+        self.highway = nn.Linear(sum(kernel_number), sum(kernel_number))
+        self.feat2out = nn.Linear(sum(kernel_number), sum(kernel_number))
+        self.out2logits = nn.Linear(sum(kernel_number), 1)
 
     def forward(self, x):
         x = self.embedding(x).unsqueeze(1)
@@ -75,7 +74,17 @@ class TextCNN(nn.Module):
 
         x = [F.max_pool1d(i, i.size(2)).squeeze(2) for i in x]
 
-        return self.fn(torch.cat(x, 1)).squeeze(-1)
+        x = torch.cat(x, dim=1)
+
+        hw = self.highway(x)
+
+        x = F.sigmoid(hw) * F.relu(hw) + (1 - F.sigmoid(hw) * x)
+
+        x = self.feat2out(self.dropout(x))
+
+        return F.sigmoid(self.out2logits(x).squeeze(1))
+
+
 
 
 class TextRNN(nn.Module):

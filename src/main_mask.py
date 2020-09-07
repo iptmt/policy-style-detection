@@ -7,7 +7,7 @@ from vocab import Vocab
 from dataset import StyleDataset
 from torch.utils.data import DataLoader
 
-from nets.classifier import RelGAN_D
+from nets.classifier import TextCNN
 from nets.masker import Masker
 from trainer import MaskTrainer
 from tool import create_logger
@@ -54,7 +54,7 @@ vb = Vocab.load(vocab_file)
 
 # create model
 #=============================================================#
-clf = RelGAN_D(len(vb))
+clf = TextCNN(len(vb))
 masker = Masker(len(vb), delta)
 #=============================================================#
 
