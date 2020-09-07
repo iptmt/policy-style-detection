@@ -14,7 +14,7 @@ from tool import create_logger
 from data_util import mask_noise_file
 from vocab import PLH
 
-seed_num = 79
+seed_num = 110
 random.seed(seed_num)
 torch.manual_seed(seed_num)
 np.random.seed(seed_num)
