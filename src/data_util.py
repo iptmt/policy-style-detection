@@ -87,20 +87,21 @@ def noise_text_ids(texts, p, noise_id, noise_type):
     return pad_texts, noise_texts
 
 def noise_text_ids_(text, p, noise_id, noise_type):
-    inds = np.random.uniform(size=len(text))
     if noise_type == "mask":
-        return mask_noise_ids(text, inds, noise_id, p)
+        return mask_noise_ids(text, noise_id, p)
     elif noise_type == "insert":
-        return insert_noise_ids(text, inds, noise_id, p)
+        return insert_noise_ids(text, noise_id, p)
     elif noise_type == "random":
-        return random_noise_ids(text, inds, noise_id, p)
+        return random_noise_ids(text, noise_id, p)
     else:
         raise ValueError
 
-def mask_noise_ids(text, inds, noise_id, p=0.15):
+def mask_noise_ids(text, noise_id, p=0.15):
+    inds = np.random.uniform(size=len(text))
     return list(map(lambda x: x[0] if x[1] > p else noise_id, zip(text, inds)))
 
-def insert_noise_ids(text, inds, noise_id, p=0.15):
+def insert_noise_ids(text, noise_id, p=0.15):
+    inds = np.random.uniform(size=len(text))
     new_text = []
     for x, i in zip(text, inds):
         if i < p:
@@ -115,21 +116,10 @@ def insert_noise_ids(text, inds, noise_id, p=0.15):
     return new_text
 
 
-def random_noise_ids(text, inds, noise_id, p=0.3):
-    new_text = []
-    for x, i in zip(text, inds):
-        if i < p:
-            r = random.random()
-            if 0.5 < r <= 0.85:
-                new_text += [noise_id]
-            elif 0.85 < r <= 0.95:
-                new_text += [noise_id] * 2
-            elif r > 0.95:
-                new_text += [noise_id] * 3
-            else:
-                continue
-        new_text.append(x)
-    return new_text
+def random_noise_ids(text, noise_id, p=0.15):
+    text = mask_noise_ids(text, noise_id, p)
+    text = list(filter(lambda x: x != noise_id, text))
+    return insert_noise_ids(text ,noise_id, p)
 
 
 
@@ -137,5 +127,5 @@ def random_noise_ids(text, inds, noise_id, p=0.3):
 if __name__ == "__main__":
     a = [100, 11, 12, 13, 14, 15, 16, 17, 18, 19, 100]
     inds = np.random.uniform(size=len(a))
-    b = random_noise_ids(a, inds, 0,  0.3)
+    b = random_noise_ids(a, 0,  0.3)
     print(b)
