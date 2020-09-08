@@ -78,7 +78,6 @@ class MaskTrainer:
         for x, x_, y in dl:
             x, x_, y = embed_device([x, x_, y], self.dev)
             pred = self.clf(x_)
-
             # weighted loss
             # weights = (x_ != PAD_ID).sum(1).float() / (x != PAD_ID).sum(1).float()
 

@@ -8,7 +8,7 @@ vocab = Vocab.load("../dump/vocab_yelp.bin")
 
 model = TextCNN(len(vocab)).to(dev)
 model.load_state_dict(torch.load("../dump/clf_yelp.pth"))
-
+model.eval()
 
 while True:
     query = input("Input a sentence: ")
