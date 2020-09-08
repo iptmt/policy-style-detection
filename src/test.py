@@ -14,10 +14,10 @@ while True:
     query = input("Input a sentence: ")
     tokens = query.strip().split()
     ids = vocab.tokens_to_ids(tokens)
-    src = torch.tensor(ids).long().to(dev)
+    # src = torch.tensor(ids).long().to(dev)
     ids = list(map(lambda x: x if x != PLH_ID else PAD_ID, ids))
     tgt = torch.tensor(ids).long().to(dev)
 
     with torch.no_grad():
-        res = model(torch.stack([src, tgt], dim=0))
+        res = model(tgt.unsqueeze(0), dim=0)
         print(res.cpu().numpy())
