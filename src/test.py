@@ -19,5 +19,5 @@ while True:
     tgt = torch.tensor(ids).long().to(dev)
 
     with torch.no_grad():
-        res = model(tgt.unsqueeze(0), dim=0)
-        print(res.cpu().numpy())
+        res = model(tgt.unsqueeze(0))
+        print(res.item())
