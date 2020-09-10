@@ -63,7 +63,7 @@ if mode == "train":
     #=============================================================#
     train_dataset = StyleDataset(train_files, vb, max_len=None)
     dev_dataset = StyleDataset(dev_files, vb, max_len=None)
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, collate_fn=StyleDataset.collate_fn_noise(noise_p, PAD_ID, "mask"))
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, collate_fn=StyleDataset.collate_fn_noise(noise_p, PAD_ID, "insert"))
     dev_loader = DataLoader(dev_dataset, batch_size=batch_size, shuffle=False, collate_fn=StyleDataset.collate_fn)
     #=============================================================#
 
