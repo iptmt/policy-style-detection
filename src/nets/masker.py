@@ -21,7 +21,7 @@ class HybridEmbedding(nn.Module):
 
 
 class Masker(nn.Module):
-    def __init__(self, n_vocab, delta, d_model=128, n_class=2, n_layers=6, n_heads=8, p_drop=0.1):
+    def __init__(self, n_vocab, delta, d_model=128, n_class=2, n_layers=4, n_heads=8, p_drop=0.1):
         super().__init__()
         self.d_model = d_model
         # embedding related
@@ -37,8 +37,7 @@ class Masker(nn.Module):
         self.gru_unit = nn.GRU(
             input_size=d_model, hidden_size=d_model, num_layers=1, batch_first=True
         )
-        self.feature2out = nn.Linear(3*d_model, 3*d_model)
-        self.out2logits = nn.Linear(3*d_model, 2)
+        self.feature2logits = nn.Linear(3*d_model, 2)
 
         # components
         self.dropout = nn.Dropout(p=p_drop)
@@ -127,8 +126,7 @@ class Masker(nn.Module):
     def exec_step(self, emb_t, ctx_t, emb_prev, h_t):
         o_t, h_t = self.gru_unit(emb_prev, h_t)
         fused_feature = torch.cat([emb_t, ctx_t, o_t], dim=-1)
-        out_feature = self.feature2out(self.dropout(fused_feature))
-        logits_t = self.out2logits(out_feature)
+        logits_t = self.feature2logits(fused_feature)
         return logits_t, h_t
     
     def cal_rewards(self, inp, label, pad_mask, masks, k, clf):
