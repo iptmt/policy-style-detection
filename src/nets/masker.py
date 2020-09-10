@@ -128,7 +128,7 @@ class Masker(nn.Module):
         o_t, h_t = self.gru_unit(emb_prev, h_t)
         fused_feature = torch.cat([emb_t, ctx_t, o_t], dim=-1)
         out_feature = self.feature2out(torch.relu(fused_feature))
-        logits_t = self.decision(self.dropout(out_feature))
+        logits_t = self.out2logits(self.dropout(out_feature))
         return logits_t, h_t
     
     def cal_rewards(self, inp, label, pad_mask, masks, k, clf):
