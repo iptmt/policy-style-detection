@@ -21,7 +21,7 @@ class HybridEmbedding(nn.Module):
 
 
 class Masker(nn.Module):
-    def __init__(self, n_vocab, delta, d_model=128, n_class=2, n_layers=4, n_heads=8, p_drop=0.1):
+    def __init__(self, n_vocab, delta, d_model=128, n_class=2, n_layers=6, n_heads=8, p_drop=0.1):
         super().__init__()
         self.d_model = d_model
         # embedding related
