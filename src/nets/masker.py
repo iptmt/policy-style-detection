@@ -127,8 +127,8 @@ class Masker(nn.Module):
     def exec_step(self, emb_t, ctx_t, emb_prev, h_t):
         o_t, h_t = self.gru_unit(emb_prev, h_t)
         fused_feature = torch.cat([emb_t, ctx_t, o_t], dim=-1)
-        out_feature = self.feature2out(torch.relu(fused_feature))
-        logits_t = self.out2logits(self.dropout(out_feature))
+        out_feature = self.feature2out(self.dropout(fused_feature))
+        logits_t = self.out2logits(out_feature)
         return logits_t, h_t
     
     def cal_rewards(self, inp, label, pad_mask, masks, k, clf):
