@@ -21,7 +21,7 @@ class HybridEmbedding(nn.Module):
 
 
 class Masker(nn.Module):
-    def __init__(self, n_vocab, delta, d_model=128, n_class=2, n_layers=6, n_heads=8, p_drop=0.1):
+    def __init__(self, n_vocab, delta, d_model=128, n_class=2, n_layers=4, n_heads=8, p_drop=0.1):
         super().__init__()
         self.d_model = d_model
         # embedding related
@@ -35,9 +35,10 @@ class Masker(nn.Module):
 
         # decision maker
         self.gru_unit = nn.GRU(
-            input_size=d_model, hidden_size=2*d_model, num_layers=1, batch_first=True
+            input_size=d_model, hidden_size=d_model, num_layers=1, batch_first=True
         )
-        self.decision = nn.Linear(4*d_model, 2)
+        self.feature2out = nn.Linear(3*d_model, 3*d_model)
+        self.out2logits = nn.Linear(3*d_model, 2)
 
         # components
         self.dropout = nn.Dropout(p=p_drop)
@@ -96,13 +97,9 @@ class Masker(nn.Module):
 
         # calculate reward for the completed sentences
         r_cp = (masks * pad_mask).sum(dim=1).float() / pad_mask.sum(dim=1).float() # K * B
-        # l = pad_mask.sum(dim=1).float()
-        # r_cp = (masks * pad_mask).sum(dim=1).float() / l - (l ** 0.5 - 1) / (l ** 0.5)
-        # r_cp = (pad_mask.sum(dim=1).float() - (masks * pad_mask).sum(dim=1).float()) / (pad_mask.sum(dim=1).float() ** 0.5) # K * B
         with torch.no_grad():
             pred_ori = clf(inp)
             pred_tgt = clf(inp * masks)
-        # r_sty = torch.abs(label.float() - pred_tgt)
         r_sty = (1 - 2 * label.float()) * (pred_tgt - pred_ori)
         rewards = self.f_r(r_cp, r_sty)
 
@@ -130,6 +127,7 @@ class Masker(nn.Module):
     def exec_step(self, emb_t, ctx_t, emb_prev, h_t):
         o_t, h_t = self.gru_unit(emb_prev, h_t)
         fused_feature = torch.cat([emb_t, ctx_t, o_t], dim=-1)
+        out_feature = self.feature2out(torch.relu(fused_feature))
         logits_t = self.decision(self.dropout(fused_feature))
         return logits_t, h_t
     
@@ -137,12 +135,6 @@ class Masker(nn.Module):
         # cal CP reward
         mask_chunks = masks.chunk(k, dim=0)
         r_cp_chunks = [(pad_mask * chunk).sum(1).float() / pad_mask.sum(1).float() for chunk in mask_chunks]
-        # r_cp_chunks = []
-        # for chunk in mask_chunks:
-        #     l = pad_mask.sum(1).float()
-        #     r_cp_chk = (pad_mask * chunk).sum(dim=1).float() / l - (l ** 0.5 - 1) / (l ** 0.5)
-        #     r_cp_chunks.append(r_cp_chk)
-        # r_cp_chunks = [(pad_mask.sum(1).float() - (pad_mask * chunk).sum(1).float()) / (pad_mask.sum(1).float() ** 0.5) for chunk in mask_chunks]
         r_cp = sum(r_cp_chunks)/k
 
         # cal STYLE reward
@@ -151,7 +143,6 @@ class Masker(nn.Module):
             pred_tgt = clf(masks * inp.repeat(k, 1))
         label = label.repeat(k).float()
         r_sty_chunks = ((1 - 2 * label) * (pred_tgt - pred_ori)).chunk(k, dim=0)
-        # r_sty_chunks = torch.abs(label - pred_tgt).chunk(k, dim=0)
         r_sty = sum(r_sty_chunks)/k
 
         return r_cp, r_sty
