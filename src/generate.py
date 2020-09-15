@@ -16,7 +16,14 @@ from tool import create_logger
 from data_util import mask_noise_file
 from vocab import PLH, BOS_ID
 
-parser = argparse.ArgumentParser()
+"""
+example:
+    python generate.py -d=yelp -m=train -t=rnn -trf=../tmp/yelp.train.mask -def=../tmp/yelp.dev.mask
+"""
+
+
+parser = argparse.ArgumentParser(description="python generate.py -d=yelp -m=train -t=rnn\
+     -trf=../tmp/yelp.train.mask -def=../tmp/yelp.dev.mask")
 parser.add_argument('-dataset', '-d', type=str) # yelp / gyafc
 parser.add_argument('-mode', '-m', type=str) # train / inf
 parser.add_argument('-type', '-t', type=str) # rnn / rnn-attn / mlm / ilm
@@ -40,7 +47,7 @@ log_dir = "../log"
 out_dir = "../out"
 
 # create logger
-logger = create_logger(log_dir, "_".join([args.type, args.dataset, args.mode]))
+logger = create_logger(log_dir, "_".join([args.type, args.dataset, args.mode] + ".log"))
 logger.info(json.dumps(vars(args), indent=4))
 
 # recap the parameters
