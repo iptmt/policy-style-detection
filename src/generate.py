@@ -47,7 +47,7 @@ log_dir = "../log"
 out_dir = "../out"
 
 # create logger
-logger = create_logger(log_dir, "_".join([args.type, args.dataset, args.mode] + ".log"))
+logger = create_logger(log_dir, "_".join([args.type, args.dataset, args.mode]) + ".log")
 logger.info(json.dumps(vars(args), indent=4))
 
 # recap the parameters
