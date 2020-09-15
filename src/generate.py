@@ -113,4 +113,4 @@ if args.mode == "inf":
     optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
     trainer = Trainer(model, args.device, optimizer)
 
-    trainer.inference(test_loader, f"{out_dir}/ours/yelp_test_{args.type}.tsf")
+    trainer.inference(test_loader, f"{out_dir}/ours/yelp_test_{args.type}.tsf", vb)
