@@ -3,21 +3,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from torch.distributions import Categorical
+from module.layer import HybridEmbedding
 
-
-class HybridEmbedding(nn.Module):
-    def __init__(self, n_vocab, d_model, n_class, pad_idx=0):
-        super().__init__()
-        self.token_embedding = nn.Embedding(n_vocab, d_model, padding_idx=pad_idx)
-        self.style_embedding = nn.Embedding(n_class, d_model)
-        self.posit_embedding = nn.Embedding(100, d_model)
-    
-    def forward(self, tokens, labels):
-        token_emb = self.token_embedding(tokens)
-        hybrid_emb = token_emb + self.posit_embedding(torch.arange(tokens.size(1)).to(tokens.device).long().unsqueeze(0))
-        if labels is not None:
-            hybrid_emb += self.style_embedding(labels.unsqueeze(1))
-        return hybrid_emb, token_emb
 
 
 class Masker(nn.Module):
@@ -47,7 +34,7 @@ class Masker(nn.Module):
 
     def forward(self, inp, label, pad_mask, k, clf):
         # embed
-        hybrid_emb, token_emb = self.hybrid_embed(inp, label)
+        hybrid_emb, token_emb = self.hybrid_embed(inp, label, return_token_emb=True)
         ctx = self.ctx_extractor(hybrid_emb.transpose(0, 1)).transpose(0, 1)
 
         emb_prev = torch.zeros(inp.size(0), 1, self.d_model, dtype=torch.float, device=inp.device)
@@ -80,7 +67,7 @@ class Masker(nn.Module):
     def sample_sequence(self, inp, label, pad_mask, k, clf):
         # embed
         inp, label, pad_mask = inp.repeat(k, 1), label.repeat(k), pad_mask.repeat(k, 1)
-        hybrid_emb, token_emb = self.hybrid_embed(inp, label)
+        hybrid_emb, token_emb = self.hybrid_embed(inp, label, return_token_emb=True)
         ctx = self.ctx_extractor(hybrid_emb.transpose(0, 1)).transpose(0, 1)
 
         emb_prev = torch.zeros(inp.size(0), 1, self.d_model, dtype=torch.float, device=inp.device)

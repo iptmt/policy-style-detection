@@ -201,3 +201,101 @@ class InsertLMTrainer:
                     str(lb.item()) + "\n"
                 )
         file.close()
+    
+
+class MLMTrainer:
+    def __init__(self, mlm, device, optimizer):
+        self.mlm = mlm.to(device)
+        self.dev = device
+        self.optimizer = optimizer
+
+        self.ce = nn.CrossEntropyLoss(ignore_index=-1)
+        self.clock = LossClock(["Loss"], 100)
+    
+    def train(self, dl):
+        self.mlm.train()
+        for x, nx, y in dl:
+            x, nx, y = embed_device([x, nx, y], self.dev)
+            logits = self.mlm(nx, y)
+            loss = self.ce(logits.reshape(-1, logits.size(-1)), x.reshape(-1))
+
+            self.optimizer.zero_grad()
+            loss.backward()
+            self.optimizer.step()
+
+            self.clock.update({"Loss": loss.item()})
+
+    def evaluate(self, dl):
+        self.mlm.eval()
+        loss_cache = []
+        for x, nx, y in dl:
+            x, nx, y = embed_device([x, nx, y], self.dev)
+            with torch.no_grad():
+                logits = self.mlm(nx, y)
+                loss = self.ce(logits.reshape(-1, logits.size(-1)), x.reshape(-1))
+                loss_cache.append(loss.item())
+        return sum(loss_cache)/len(loss_cache)
+    
+    def inference(self, dl, file_name, vocab):
+        self.mlm.eval()
+        tuples = []
+        for x, nx, y in dl:
+            x, nx, y = embed_device([x, nx, y], self.dev)
+            with torch.no_grad():
+                results = self.mlm(nx, 1 - y).argmax(-1)
+            tuples += list(zip(x.unbind(0), results.unbind(0), y.unbind(0)))
+        write_to_file(tuples, file_name, vocab)
+
+
+
+class RNNTrainer:
+    def __init__(self, rnn, device, optimizer):
+        self.rnn = rnn.to(device)
+        self.dev = device
+        self.optimizer = optimizer
+
+        self.ce = nn.CrossEntropyLoss(ignore_index=-1)
+        self.clock = LossClock(["Loss"], 100)
+    
+    def train(self, dl):
+        self.rnn.train()
+        for x, nx, y in dl:
+            x, nx, y = embed_device([x, nx, y], self.dev)
+            logits = self.rnn(nx, x[:, :-1], y, PAD_ID)
+            loss = self.ce(logits.reshape(-1, logits.size(-1)), x[:, 1:].reshape(-1))
+
+            self.optimizer.zero_grad()
+            loss.backward()
+            self.optimizer.step()
+
+            self.clock.update({"Loss": loss.item()})
+    
+    def evaluate(self, dl):
+        self.rnn.eval()
+        loss_cache = []
+        for x, nx, y in dl:
+            x, nx, y = embed_device([x, nx, y], self.dev)
+            with torch.no_grad():
+                logits = self.rnn(nx, x[:, :-1], y, PAD_ID)
+                loss = self.ce(logits.reshape(-1, logits.size(-1)), x[:, 1:].reshape(-1))
+                loss_cache.append(loss.item())
+        return sum(loss_cache)/len(loss_cache)
+    
+    def inference(self, dl, file_name, vocab):
+        self.rnn.eval()
+        tuples = []
+        for x, nx, y in dl:
+            x, nx, y = embed_device([x, nx, y], self.dev)
+            with torch.no_grad():
+                results = self.rnn(nx, None, 1 - y, PAD_ID).argmax(-1)
+            tuples += list(zip(x.unbind(0), results.unbind(0), y.unbind(0)))
+        write_to_file(tuples, file_name, vocab)
+
+
+
+def write_to_file(tensor_lists, file_name, vocab):
+    f_obj = open(file_name, 'w+')
+    for src, tgt, label in tensor_lists:
+        src, tgt, label = vocab.tensor_to_sent(src), vocab.tensor_to_sent(tgt), label.item()
+        f_obj.write(" ".join(src) + "\t" + " ".join(tgt) + "\t" + str(label) + "\n")
+    f_obj.close()

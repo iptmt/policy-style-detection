@@ -7,8 +7,8 @@ from vocab import Vocab
 from dataset import StyleDataset
 from torch.utils.data import DataLoader
 
-from nets.classifier import TextCNN
-from nets.masker import Masker
+from module.classifier import TextCNN
+from module.masker import Masker
 from trainer import MaskTrainer
 from tool import create_logger
 from vocab import PAD_ID

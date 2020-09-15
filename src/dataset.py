@@ -91,7 +91,7 @@ class TemplateDataset(Dataset):
         return len(self.samples)
     
     @staticmethod
-    def collate_fn_train(batch_samples):
+    def collate_fn_insert(batch_samples):
         masked_ids, ids, removed_ids, inds, label_mlm, label_slot = [], [], [], [], [], []
         for s, ns, l in  batch_samples:
             ms, s, rs, i = iter_samples(s, ns)
@@ -114,7 +114,7 @@ class TemplateDataset(Dataset):
         return alg_masked_ids, alg_ids, label_mlm, alg_removed_ids, alg_inds, label_slot
     
     @staticmethod
-    def collate_fn_inf(batch_samples):
+    def collate_fn_margin(batch_samples):
         sentences, temp_sentences, labels = zip(*batch_samples)
         temp_sentences = [list(filter(lambda x: x != PLH_ID, temp)) for temp in temp_sentences]
 
@@ -122,6 +122,16 @@ class TemplateDataset(Dataset):
         aligned_temps = torch.tensor(align_texts(temp_sentences), dtype=torch.long)
         labels = torch.tensor(labels, dtype=torch.long)
         return aligned_sentences, aligned_temps, labels
+    
+    @staticmethod
+    def collate_fn_mask(batch_samples):
+        sentences, temp_sentences, labels = zip(*batch_samples)
+        aligned_sentences = torch.tensor(align_texts(sentences), dtype=torch.long)
+        aligned_temps = torch.tensor(align_texts(temp_sentences), dtype=torch.long)
+        labels = torch.tensor(labels, dtype=torch.long)
+        assert aligned_sentences.size(1) == aligned_temps.size(1)
+        return aligned_sentences, aligned_temps, labels
+        
 
 
 
@@ -138,7 +148,7 @@ if __name__ == "__main__":
     vocab = Vocab.load("../dump/vocab_yelp.bin")
 
     dataset = TemplateDataset([outf], vocab, None)
-    loader = DataLoader(dataset, 512, False, collate_fn=TemplateDataset.collate_fn_train)
+    loader = DataLoader(dataset, 512, False, collate_fn=TemplateDataset.collate_fn_margin)
     cnt = 1
     for a, b, c, d, e, f in loader:
         if a is not None:

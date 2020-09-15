@@ -40,67 +40,67 @@ vb = Vocab.load(vocab_file)
 data_dir = f"../data/{data}/"
 tmp_dir = f"../tmp/"
 
-if mode == "pretrain":
-    # generate randomly masked samples
-    #=============================================================#
-    train_files = ["style.train.0", "style.train.1"]
-    dev_files = ["style.dev.0", "style.dev.1"]
+# if mode == "pretrain":
+#     # generate randomly masked samples
+#     #=============================================================#
+#     train_files = ["style.train.0", "style.train.1"]
+#     dev_files = ["style.dev.0", "style.dev.1"]
     
-    ilm = InsertLM(len(vb))
-    optimize_ilm = torch.optim.Adam(ilm.parameters(), lr=1e-4)
-    model_trainer = InsertLMTrainer(ilm, dev, optimize_ilm)
+#     ilm = InsertLM(len(vb))
+#     optimize_ilm = torch.optim.Adam(ilm.parameters(), lr=1e-4)
+#     model_trainer = InsertLMTrainer(ilm, dev, optimize_ilm)
 
-    for fn in dev_files:
-        f_info = fn.split(".")
-        mask_noise_file(data_dir + fn, tmp_dir + f"{fn}.{data}.mask", f_info[-1], noise_p)
-    dev_dataset = TemplateDataset([tmp_dir + f"{fn}.{data}.mask" for fn in dev_files], vb, max_len=max_seq_len)
-    dev_loader = DataLoader(dev_dataset, batch_size=batch_size, shuffle=False, collate_fn=TemplateDataset.collate_fn_train)
-    best_loss = model_trainer.evaluate(dev_loader)
+#     for fn in dev_files:
+#         f_info = fn.split(".")
+#         mask_noise_file(data_dir + fn, tmp_dir + f"{fn}.{data}.mask", f_info[-1], noise_p)
+#     dev_dataset = TemplateDataset([tmp_dir + f"{fn}.{data}.mask" for fn in dev_files], vb, max_len=max_seq_len)
+#     dev_loader = DataLoader(dev_dataset, batch_size=batch_size, shuffle=False, collate_fn=TemplateDataset.collate_fn_train)
+#     best_loss = model_trainer.evaluate(dev_loader)
 
-    for epoch in range(epochs):
-        for fn in train_files:
-            f_info = fn.split(".")
-            mask_noise_file(data_dir + fn, tmp_dir + f"{fn}.{data}.mask", f_info[-1], noise_p)
+#     for epoch in range(epochs):
+#         for fn in train_files:
+#             f_info = fn.split(".")
+#             mask_noise_file(data_dir + fn, tmp_dir + f"{fn}.{data}.mask", f_info[-1], noise_p)
 
-        # pretrain
-        #=============================================================#
-        train_dataset = TemplateDataset([tmp_dir + f"{fn}.{data}.mask" for fn in train_files], vb, max_len=max_seq_len)
-        train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, collate_fn=TemplateDataset.collate_fn_train)
+#         # pretrain
+#         #=============================================================#
+#         train_dataset = TemplateDataset([tmp_dir + f"{fn}.{data}.mask" for fn in train_files], vb, max_len=max_seq_len)
+#         train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, collate_fn=TemplateDataset.collate_fn_train)
 
-        logger.info(f"Pre-training InsertLM -- Epoch {epoch}")
-        model_trainer.train(train_loader)
-        loss = model_trainer.evaluate(dev_loader)
-        logger.info(f"Dev. Loss: {loss}")
-        if loss < best_loss:
-            logger.info(f"Update InsertLM dump {int(loss*1e4)/1e4} <- {int(best_loss*1e4)/1e4}")
-            torch.save(ilm.state_dict(), f"../dump/ilm_{data}_pretrain.pth")
-            best_loss = loss
-        else:
-            break
-        logger.info("=" * 50)
+#         logger.info(f"Pre-training InsertLM -- Epoch {epoch}")
+#         model_trainer.train(train_loader)
+#         loss = model_trainer.evaluate(dev_loader)
+#         logger.info(f"Dev. Loss: {loss}")
+#         if loss < best_loss:
+#             logger.info(f"Update InsertLM dump {int(loss*1e4)/1e4} <- {int(best_loss*1e4)/1e4}")
+#             torch.save(ilm.state_dict(), f"../dump/ilm_{data}_pretrain.pth")
+#             best_loss = loss
+#         else:
+#             break
+#         logger.info("=" * 50)
 
-    for fn in train_files + dev_files:
-        os.remove(tmp_dir + f"{fn}.{data}.mask")
+#     for fn in train_files + dev_files:
+#         os.remove(tmp_dir + f"{fn}.{data}.mask")
 
         
-elif mode == "train":
+if mode == "train":
     train_files = [f"../tmp/{data}.train.mask"]
     dev_files = [f"../tmp/{data}.dev.mask"]
     # load sources
     #=============================================================#
     train_dataset = TemplateDataset(train_files, vb, max_len=max_seq_len)
     dev_dataset = TemplateDataset(dev_files, vb, max_len=max_seq_len)
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, collate_fn=TemplateDataset.collate_fn_train)
-    dev_loader = DataLoader(dev_dataset, batch_size=batch_size, shuffle=False, collate_fn=TemplateDataset.collate_fn_train)
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, collate_fn=TemplateDataset.collate_fn_insert)
+    dev_loader = DataLoader(dev_dataset, batch_size=batch_size, shuffle=False, collate_fn=TemplateDataset.collate_fn_insert)
 
     # create model
     #=============================================================#
     ilm = InsertLM(len(vb))
-    ilm.load_state_dict(torch.load(f"../dump/ilm_{data}_pretrain.pth"))
+    # ilm.load_state_dict(torch.load(f"../dump/ilm_{data}_pretrain.pth"))
 
     # construct trainer
     #=============================================================#
-    optimize_ilm = torch.optim.Adam(ilm.parameters(), lr=1e-5)
+    optimize_ilm = torch.optim.Adam(ilm.parameters(), lr=1e-4)
     model_trainer = InsertLMTrainer(ilm, dev, optimize_ilm)
 
     # training
@@ -124,7 +124,7 @@ elif mode == "inf":
     # load sources
     #=============================================================#
     test_dataset= TemplateDataset(test_files, vb, max_seq_len)
-    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, collate_fn=TemplateDataset.collate_fn_inf)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, collate_fn=TemplateDataset.collate_fn_margin)
 
     # load model
     #=============================================================#
