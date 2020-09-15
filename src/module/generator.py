@@ -123,7 +123,7 @@ class InsertLM(nn.Module):
 
     def forward(self, inp_v, label_v, inp_p, label_p):
         if inp_v is not None:
-            hyb_emb_v, _ = self.embedding(inp_v, label_v)
+            hyb_emb_v, _ = self.embedding(inp_v, label_v, return_token_emb=True)
             
             x = self.insert_lm(hyb_emb_v.transpose(0, 1)).transpose(0, 1)
 
