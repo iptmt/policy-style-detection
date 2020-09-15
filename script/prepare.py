@@ -8,7 +8,7 @@ import torch.nn.functional as F
 from tqdm import trange
 from vocab import Vocab, PLH_ID, PAD_ID
 from dataset import StyleDataset, TemplateDataset
-from nets.classifier import TextCNN
+from module.classifier import TextCNN
 from bert_score import BERTScorer
 from transformers import GPT2LMHeadModel, GPT2Tokenizer
 from transformers import ElectraTokenizer, ElectraForTokenClassification
