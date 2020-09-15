@@ -8,7 +8,7 @@ from tqdm import trange
 from vocab import Vocab
 from dataset import StyleDataset, TemplateDataset
 from torch.utils.data import DataLoader
-from nets.classifier import TextCNN
+from module.classifier import TextCNN
 
 """
 python acc.py [corpus name] [hypothesis file]
