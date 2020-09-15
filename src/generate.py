@@ -88,7 +88,7 @@ if args.mode == "train":
         epoch_loss = trainer.evaluate(dev_loader)
         logger.info(f"Dev. Loss: {epoch_loss}")
         if epoch_loss < best_loss:
-            logger.info(f"{int(epoch_loss*1e4)/1e4} <- {int(best_loss*1e4)/1e4}", "dumping model...")
+            logger.info(f"{int(epoch_loss*1e4)/1e4} <- {int(best_loss*1e4)/1e4}, dumping model...")
             torch.save(model.state_dict(), f"{dump_dir}/{'_'.join([args.type, args.dataset])}.pth")
             best_loss = epoch_loss
         else:
