@@ -2,7 +2,7 @@ import os
 import sys
 sys.path.append("../src")
 import torch
-from vocab import Vocab, PAD_ID
+from vocab import Vocab, PAD_ID, PLH_ID
 from dataset import TemplateDataset
 from torch.utils.data import DataLoader
 from nets.classifier import TextCNN
@@ -25,19 +25,20 @@ model = TextCNN(len(vocab)).to(dev)
 model.load_state_dict(torch.load(f"../dump/eval_clf_{ds}.pth"))
 model.eval()
 
-test_dataset = TemplateDataset([hyp_file], vocab)
-test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, collate_fn=TemplateDataset.collate_fn_rank)
+test_dataset = TemplateDataset([hyp_file], vocab, borders=False)
+test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, collate_fn=TemplateDataset.collate_fn_mask)
 total_shifts, N_remove, N_total = [], 0, 0
 
-for x, masked_x, ph_ind, y in test_loader:
+for x, masked_x, y in test_loader:
     x, masked_x, y = x.to(dev), masked_x.to(dev), y.to(dev)
     pad_mask = (x != PAD_ID).long()
+    ph_mask = (masked_x != PLH_ID).long()
     with torch.no_grad():
         pred = model(x)
         pred_m = model(masked_x)
     shifts = (1 - 2 * y.float()) * (pred_m - pred)
     total_shifts.append(shifts.cpu())
-    N_remove += ph_ind.sum().item()
+    N_remove += (pad_mask * ph_mask).sum().item()
     N_total += pad_mask.sum().item()
 
 avg_shift = torch.cat(total_shifts, 0).mean().item()

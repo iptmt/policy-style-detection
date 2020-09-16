@@ -67,8 +67,8 @@ class TemplateDataset(Dataset):
         self.files = files
         self.vocab = vocab
         self.max_len = max_len
-        self.samples = self._load()
         self.borders = borders
+        self.samples = self._load()
     
     def _load(self):
         samples = []
