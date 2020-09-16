@@ -42,4 +42,4 @@ for x, masked_x, y in test_loader:
     N_total += pad_mask.sum().item()
 
 avg_shift = torch.cat(total_shifts, 0).mean().item()
-print("Prop.: %.4f, Average style shift: %.4f" % (N_remove/N_total, avg_shift))
+print("Prop.: %.4f, Average style shift: %.4f" % (1 - N_remove/N_total, avg_shift))
