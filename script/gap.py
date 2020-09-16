@@ -5,7 +5,7 @@ import torch
 from vocab import Vocab, PAD_ID, PLH_ID
 from dataset import TemplateDataset
 from torch.utils.data import DataLoader
-from nets.classifier import TextCNN
+from module.classifier import TextCNN
 
 """
 python gap.py [corpus name] [hypothesis file]
