@@ -243,7 +243,7 @@ class MLMTrainer:
             x, nx, y = embed_device([x, nx, y], self.dev)
             with torch.no_grad():
                 results = self.mlm(nx, 1 - y).argmax(-1)
-            tuples += list(zip(x.unbind(0), results.unbind(0), y.unbind(0)))
+            tuples += list(zip(x.unbind(0), results.unbind(0), (1 - y).unbind(0)))
         write_to_file(tuples, file_name, vocab)
 
 
@@ -288,7 +288,7 @@ class RNNTrainer:
             x, nx, y = embed_device([x, nx, y], self.dev)
             with torch.no_grad():
                 results = self.rnn(nx, None, 1 - y, PAD_ID).argmax(-1)
-            tuples += list(zip(x.unbind(0), results.unbind(0), y.unbind(0)))
+            tuples += list(zip(x.unbind(0), results.unbind(0), (1 - y).unbind(0)))
         write_to_file(tuples, file_name, vocab)
 
 
