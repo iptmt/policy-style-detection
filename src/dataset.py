@@ -133,7 +133,6 @@ class TemplateDataset(Dataset):
         aligned_sentences = torch.tensor(align_texts(sentences), dtype=torch.long)
         aligned_temps = torch.tensor(align_texts(temp_sentences), dtype=torch.long)
         labels = torch.tensor(labels, dtype=torch.long)
-        assert aligned_sentences.size(1) == aligned_temps.size(1)
         return aligned_sentences, aligned_temps, labels
         
 
