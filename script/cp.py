@@ -1,7 +1,8 @@
 import os
 import sys
 from collections import defaultdict
-from bert_score import BERTScorer
+# from bert_score import BERTScorer
+from nltk.translate.bleu_score import corpus_bleu
 
 """
 python cp.py [corpus name] [hypothesis file]
@@ -33,10 +34,15 @@ ref_list = [refs for refs in ref_dict.values()]
 ref_sents = [ref for refs in ref_list for ref in refs]
 ref_list = list(zip(*ref_list))
 
-# load BERT model
-scorer = BERTScorer(model_type="albert-xlarge-v2", lang="en", rescale_with_baseline=True, idf=True, idf_sents=ref_sents, batch_size=32)
+cands = [c.strip().split() for c in cands]
+ref_list = [[ref.strip().split() for ref in refs] for refs in ref_list]
 
-P, R, F1 = scorer.score(cands, ref_list)
-P, R, F1 = P.mean().item(), R.mean().item(), F1.mean().item()
+bleu = corpus_bleu(ref_list, cands)
 
-print("P: %.4f; R: %.4f; F1: %.4f." % (P, R, F1))
+print("BLEU: %.4f" % bleu)
+# scorer = BERTScorer(model_type="albert-xlarge-v2", lang="en", rescale_with_baseline=True, idf=True, idf_sents=ref_sents, batch_size=32)
+
+# P, R, F1 = scorer.score(cands, ref_list)
+# P, R, F1 = P.mean().item(), R.mean().item(), F1.mean().item()
+
+# print("P: %.4f; R: %.4f; F1: %.4f." % (P, R, F1))
