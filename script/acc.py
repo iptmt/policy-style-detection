@@ -28,8 +28,8 @@ model = TextCNN(len(vocab)).to(dev)
 model.load_state_dict(torch.load(f"../dump/eval_clf_{ds}.pth"))
 model.eval()
 
-test_dataset = TemplateDataset([hyp_file], vocab)
-test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, collate_fn=TemplateDataset.collate_fn_inf)
+test_dataset = TemplateDataset([hyp_file], vocab, borders=False)
+test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, collate_fn=TemplateDataset.collate_fn_mask)
 hits, total = 0, 0
 # total_shifts = []
 

@@ -103,7 +103,7 @@ if args.mode == "train":
         logger.info("=" * 50)
 
 if args.mode == "inf":
-    test_dataset= TemplateDataset([args.test_file], vb, max_len=args.max_length)
+    test_dataset= TemplateDataset([args.test_file], vb, max_len=None)
     test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, collate_fn=collate_fn_dict[args.type][args.mode])
 
     model, Trainer = model_dict[args.type]

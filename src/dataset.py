@@ -62,12 +62,13 @@ class StyleDataset(Dataset):
 
 
 class TemplateDataset(Dataset):
-    def __init__(self, files, vocab, max_len=None):
+    def __init__(self, files, vocab, max_len=None, borders=True):
         super().__init__()
         self.files = files
         self.vocab = vocab
         self.max_len = max_len
         self.samples = self._load()
+        self.borders = borders
     
     def _load(self):
         samples = []
@@ -79,7 +80,10 @@ class TemplateDataset(Dataset):
         return samples
     
     def __load_lines(self, f_obj):
-        encode = lambda s: [BOS_ID] + self.vocab.tokens_to_ids(s)[: self.max_len] + [EOS_ID]
+        if self.borders:
+            encode = lambda s: [BOS_ID] + self.vocab.tokens_to_ids(s)[: self.max_len] + [EOS_ID]
+        else:
+            encode = lambda s: self.vocab.tokens_to_ids(s)[: self.max_len]
         # load
         sentences = [line.strip().split("\t") for line in f_obj]
         return [(encode(s.split()), encode(s_temp.split()), int(label)) for s, s_temp, label in sentences]
