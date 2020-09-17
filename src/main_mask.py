@@ -35,7 +35,7 @@ epochs_clf = 20
 epochs_masker = 40
 batch_size = 512
 max_seq_len = None # no limit
-noise_p = 0.2
+noise_p = 0.3
 delta = 0.65
 
 rollouts = 8
