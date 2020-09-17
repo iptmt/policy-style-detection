@@ -12,6 +12,8 @@ RNN-cell: GRU;  Attntion: dot-product;  Flow-type: Luong
 class RNN_S2S(nn.Module):
     def __init__(self, n_vocab, max_len, bos_token_id, n_class=2, d_emb=128, d_h=256, attention=True, p_dropout=0.1):
         super().__init__()
+        if not attention:
+            d_h = 2 * d_h # doublize the dim if no attention applied
         self.max_len = max_len
         self.bos_token_id = bos_token_id
         self.attn = attention
