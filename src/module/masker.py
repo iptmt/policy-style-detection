@@ -27,7 +27,12 @@ class Masker(nn.Module):
         self.gru_unit = nn.GRU(
             input_size=d_model, hidden_size=d_model, num_layers=1, batch_first=True
         )
-        self.feature2logits = nn.Linear(4*d_model, 2)
+
+        self.fuse_1 = nn.Linear(3 * d_model, d_model)
+
+        self.fuse_2 = nn.Linear(2 * d_model, d_model)
+
+        self.feature2logits = nn.Linear(d_model, 2)
 
         # components
         self.dropout = nn.Dropout(p=p_drop)
@@ -117,8 +122,11 @@ class Masker(nn.Module):
     
     def exec_step(self, emb_t, ctx_t, emb_prev, h_t):
         o_t, h_t = self.gru_unit(emb_prev, h_t)
-        fused_feature = torch.cat([emb_t, ctx_t, o_t], dim=-1)
-        logits_t = self.feature2logits(fused_feature)
+        # fused_feature = torch.cat([emb_t, ctx_t, o_t], dim=-1)
+        # logits_t = self.feature2logits(fused_feature)
+        feat_1 = self.fuse_1(torch.cat([emb_t, ctx_t], dim=-1))
+        feat_2 = self.fuse_2(torch.cat([o_t, torch.relu(feat_1)], dim=-1))
+        logits_t = self.feature2logits(feat_2)
         return logits_t, h_t
     
     def cal_rewards(self, inp, label, pad_mask, masks, k, clf):

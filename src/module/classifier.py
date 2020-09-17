@@ -54,7 +54,7 @@ class RelGAN_D(nn.Module):
 
 class TextCNN(nn.Module):
     def __init__(self, vocab_size, emb_dim=192,
-                       kernels=[1,3,5], kernel_number=[64,64,64], p_drop=0.5):
+                       kernels=[3,4,5], kernel_number=[64,64,64], p_drop=0.5):
         super().__init__()
         self.embedding = nn.Embedding(vocab_size, emb_dim, padding_idx=0)
         self.convs = nn.ModuleList(
