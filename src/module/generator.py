@@ -134,7 +134,7 @@ class InsertLM(nn.Module):
             v_logits = None
 
         if inp_p is not None:
-            hyb_emb_p, _ = self.embedding(inp_p, label_p)
+            hyb_emb_p = self.embedding(inp_p, label_p)
 
             x = self.insert_lm(hyb_emb_p.transpose(0, 1)).transpose(0, 1)
 
