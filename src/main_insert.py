@@ -53,7 +53,7 @@ if mode == "pretrain":
         ns_ = [line.strip().split() for line in f]
     with open(f"../data/{data}/style.dev.1", "r") as f:
         ps_ = [line.strip().split() for line in f]
-    
+
     mlm = MaskLM(len(vb))
     mlm.load_state_dict(torch.load(f"../dump/mlm_{data}.pth"))
     mlm_trainer = MLMTrainer(mlm, dev, None)
@@ -104,7 +104,7 @@ if mode == "pretrain":
         os.remove(f"../tmp/{data}.train.rank_")
         os.remove(f"../tmp/{data}.dev.rank_")
 
-        
+
 elif mode == "train":
     # load sources
     #=============================================================#
@@ -133,7 +133,7 @@ elif mode == "train":
         logger.info(f"Dev. Loss: {loss}")
         if loss < best_loss:
             logger.info(f"Update InsertLM dump {int(loss*1e4)/1e4} <- {int(best_loss*1e4)/1e4}")
-            torch.save(ilm.state_dict(), f"../dump/ilm_{data}.pth")
+            torch.save(ilm.state_dict(), f"../dump/ilm_{data}_finetune.pth")
             best_loss = loss
         logger.info("=" * 50)
 
@@ -146,7 +146,7 @@ elif mode == "test":
     # load model
     #=============================================================#
     ilm = InsertLM(len(vb))
-    ilm.load_state_dict(torch.load(f"../dump/ilm_{data}.pth"))
+    ilm.load_state_dict(torch.load(f"../dump/ilm_{data}_finetune.pth"))
 
     # construct trainer
     #=============================================================#
@@ -154,4 +154,4 @@ elif mode == "test":
 
     # generate permutation
     #=============================================================#
-    model_trainer.transfer(test_loader, f"../out/ours/{data}_test.tsf", vb)
+    model_trainer.transfer(test_loader, f"../out/ours/{data}_test_ilm.tsf", vb)
