@@ -211,7 +211,7 @@ class InsertLMTrainer:
             self.optimizer.step()
 
             self.clock.update({"Loss_vocab": loss_v.item(), "Loss_position": loss_p.item()})
-            time.sleep(0.05)
+            time.sleep(0.03) # prevent the overheat of GPU
     
     def evaluate(self, dl):
         self.ilm.eval()

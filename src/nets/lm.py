@@ -15,14 +15,14 @@ class MaskLM(nn.Module):
             num_layers=n_layer
         )
 
-        self.proj = nn.Linear(d_model, n_vocab)
+        self.hidden2logits = nn.Linear(d_model, n_vocab)
     
     def forward(self, inp, label):
         hyb_embed, _ = self.embedding(inp, label)
 
         x = self.mlm(hyb_embed.transpose(0, 1)).transpose(0, 1)
 
-        return self.proj(x)
+        return self.hidden2logits(x)
 
 
 class InsertLM(nn.Module):
