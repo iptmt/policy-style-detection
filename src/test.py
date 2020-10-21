@@ -1,23 +1,13 @@
-import torch
-from vocab import Vocab, PAD_ID, PLH_ID
-from nets.classifier import TextCNN
+import os
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
+from bleurt import score
 
-dev = torch.device("cuda:0")
+checkpoint = "/home/zaracs/ckpts/bleurt-base-128"
+references = ["we were happy to go there."]
+candidates = ["we were not happy to go there."]
+# candidates = ["It is our pleasure to go there."]
 
-vocab = Vocab.load("../dump/vocab_yelp.bin")
-
-model = TextCNN(len(vocab)).to(dev)
-model.load_state_dict(torch.load("../dump/clf_yelp.pth"))
-model.eval()
-
-while True:
-    query = input("Input a sentence: ")
-    tokens = query.strip().split()
-    ids = vocab.tokens_to_ids(tokens)
-    # src = torch.tensor(ids).long().to(dev)
-    ids = list(map(lambda x: x if x != PLH_ID else PAD_ID, ids))
-    tgt = torch.tensor(ids).long().to(dev)
-
-    with torch.no_grad():
-        res = model(tgt.unsqueeze(0))
-        print(res.item())
+scorer = score.BleurtScorer(checkpoint)
+scores = scorer.score(references, candidates)
+assert type(scores) == list and len(scores) == 1
+print(scores)
