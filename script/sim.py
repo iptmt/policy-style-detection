@@ -1,7 +1,7 @@
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 import os
-# os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 import sys
 import numpy as np
 from collections import defaultdict
@@ -53,10 +53,7 @@ ref_tuple = list(zip(*ref_list))
 
 checkpoint = "/home/zaracs/ckpts/bleurt-base-128"
 scorer = score.BleurtScorer(checkpoint)
-import time
-start = time.time()
 score_list = [scorer.score(list(refs), cands, batch_size=100) for refs in ref_list]
 score_mat = np.array(score_list)
 score_corpus = score_mat.max(axis=0).mean()
 print("BLEURT score: %.4f" % score_corpus)
-print("Time cost: %.1fs" % (time.time() - start))
