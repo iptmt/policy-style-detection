@@ -1,4 +1,5 @@
 import os
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 import sys
 import torch
 import torch.nn as nn

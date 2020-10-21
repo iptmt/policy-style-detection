@@ -1,3 +1,4 @@
+import math
 import random
 import numpy as np
 from vocab import PLH_ID, PLH, PAD_ID
@@ -98,7 +99,12 @@ def noise_text_ids_(text, p, noise_id, noise_type):
 
 def mask_noise_ids(text, noise_id, p=0.15):
     inds = np.random.uniform(size=len(text))
-    return list(map(lambda x: x[0] if x[1] > p else noise_id, zip(text, inds)))
+    text = np.array(text, dtype=np.long)
+    for idx, i in enumerate(inds):
+        if i < p:
+            text[idx: idx + math.ceil(random.random() * 3)] = noise_id
+    return text.tolist()
+    # return list(map(lambda x: x[0] if x[1] > p else noise_id, zip(text, inds)))
 
 def insert_noise_ids(text, noise_id, p=0.15):
     inds = np.random.uniform(size=len(text))
@@ -114,7 +120,6 @@ def insert_noise_ids(text, noise_id, p=0.15):
                 new_text += [noise_id] * 3
         new_text.append(x)
     return new_text
-
 
 def random_noise_ids(text, noise_id, p=0.15):
     text = mask_noise_ids(text, noise_id, p)

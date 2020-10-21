@@ -1,3 +1,4 @@
+import time
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -41,6 +42,8 @@ class MaskTrainer:
             self.clock.update(
                 {"Loss": loss_r.item(), "R": r_mean.item()}
             )
+            time.sleep(0.03)
+            
 
     def evaluate(self, dl):
         self.masker.eval()
