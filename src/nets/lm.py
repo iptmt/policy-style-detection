@@ -6,7 +6,7 @@ from nets.masker import HybridEmbedding
 
 
 class MaskLM(nn.Module):
-    def __init__(self, n_vocab, d_model=512, n_layer=4, n_head=8, n_class=2, pad_idx=0):
+    def __init__(self, n_vocab, d_model=512, n_layer=6, n_head=8, n_class=2, pad_idx=0):
         super().__init__()
         self.embedding = HybridEmbedding(n_vocab, d_model, n_class, pad_idx=pad_idx)
 

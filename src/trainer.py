@@ -1,3 +1,4 @@
+import time
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -210,6 +211,7 @@ class InsertLMTrainer:
             self.optimizer.step()
 
             self.clock.update({"Loss_vocab": loss_v.item(), "Loss_position": loss_p.item()})
+            time.sleep(0.05)
     
     def evaluate(self, dl):
         self.ilm.eval()
