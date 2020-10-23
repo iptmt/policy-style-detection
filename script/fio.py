@@ -21,6 +21,19 @@ def read_csv(file_name):
             outputs.append(row)
             line_count += 1
         return outputs
+
+def read_tsv(file_name):
+    with open(file_name, 'r') as f:
+        reader = csv.reader(f, delimiter="\t")
+        rows = [row for row in reader]
+        return rows
     
 def split_lines(file_name, delimiter):
     return [line.split(delimiter) for line in read(file_name)]
+
+
+
+if __name__ == "__main__":
+    file_name = "../data/cola/in_domain_dev.tsv"
+    rows = read_tsv(file_name)
+    print(rows)
