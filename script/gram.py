@@ -22,6 +22,7 @@ tkz = AutoTokenizer.from_pretrained("bert-base-uncased", mirror="tuna")
 
 bert = BertForSequenceClassification(BertConfig()).to(dev)
 bert.load_state_dict(torch.load("../dump/eval_disc.pth"))
+bert.eval()
 
 class DiscDataset(Dataset):
     def __init__(self, src_tgt_pairs):
@@ -46,5 +47,11 @@ train_loader = DataLoader(
     dataset=DiscDataset(data), batch_size=100, shuffle=False, collate_fn=collate_fn
 )
 
+cnt, hit = 0, 0
 for src, tgt in train_loader:
-    print(src.shape, tgt.shape)
+    with torch.no_grad():
+        src_preds = bert(input_ids=src)[0]
+        tgt_preds = bert(input_ids=tgt)[0]
+        hit += (tgt_preds > src_preds).sum().item()
+    cnt += src_preds.size(0)
+print("Prop. pass the test: %.2f" % (hit / cnt) * 100)

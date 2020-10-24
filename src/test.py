@@ -1,13 +1,8 @@
-import os
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
-from bleurt import score
+import torch
 
-checkpoint = "/home/zaracs/ckpts/bleurt-base-128"
-references = ["we were happy to go there."]
-candidates = ["we were not happy to go there."]
-# candidates = ["It is our pleasure to go there."]
+a = torch.randn([2, 2])
+b = torch.randn([2, 2])
 
-scorer = score.BleurtScorer(checkpoint)
-scores = scorer.score(references, candidates)
-assert type(scores) == list and len(scores) == 1
-print(scores)
+print(a)
+print(b)
+print(a>b)

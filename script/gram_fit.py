@@ -30,6 +30,7 @@ dev_data = "../data/cola/out_of_domain_dev.tsv"
 tkz = AutoTokenizer.from_pretrained("bert-base-uncased", mirror="tuna")
 
 bert = BertForSequenceClassification.from_pretrained("bert-base-uncased", mirror="tuna").to(dev)
+bert.train()
 
 optimizer = torch.optim.AdamW(bert.parameters(), lr=lr)
 
