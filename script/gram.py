@@ -48,10 +48,12 @@ train_loader = DataLoader(
 )
 
 cnt, hit = 0, 0
+softmax = torch.nn.Softmax(dim=-1)
 for src, tgt in train_loader:
     with torch.no_grad():
         src_preds = bert(input_ids=src)[0]
         tgt_preds = bert(input_ids=tgt)[0]
+        norm_src, norm_tgt = softmax(src_preds)[:, 1], softmax(tgt_preds)[:, 1]
         hit += (tgt_preds > src_preds).sum().item()
     cnt += src_preds.size(0)
 print("Prop. pass the test: %.2f" % (hit / cnt) * 100)
