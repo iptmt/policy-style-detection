@@ -29,9 +29,9 @@ dev_data = "../data/cola/out_of_domain_dev.tsv"
 
 tkz = AutoTokenizer.from_pretrained("bert-base-uncased", mirror="tuna")
 
-roberta = BertForSequenceClassification.from_pretrained("bert-base-uncased", mirror="tuna").to(dev)
+bert = BertForSequenceClassification.from_pretrained("bert-base-uncased", mirror="tuna").to(dev)
 
-optimizer = torch.optim.AdamW(roberta.parameters(), lr=lr)
+optimizer = torch.optim.AdamW(bert.parameters(), lr=lr)
 
 class ClfDataset(Dataset):
     def __init__(self, sentence_label_pairs):
@@ -91,11 +91,11 @@ dev_loader = DataLoader(
     dataset=ClfDataset(dev_pairs), batch_size=batch_size, shuffle=False, collate_fn=collate_fn
 )
 
-best_acc = evaluate(roberta, dev_loader)
+best_acc = evaluate(bert, dev_loader)
 for epoch in range(epochs):
-    fit(roberta, train_loader, optimizer, epoch)
-    acc = evaluate(roberta, dev_loader)
+    fit(bert, train_loader, optimizer, epoch)
+    acc = evaluate(bert, dev_loader)
     if acc > best_acc:
-        torch.save(roberta.state_dict(), f"../dump/eval_disc.pth")
+        torch.save(bert.state_dict(), f"../dump/eval_disc.pth")
         print("Acc: %.4f -> %.4f" % (best_acc, acc))
         best_acc = acc
