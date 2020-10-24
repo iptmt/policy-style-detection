@@ -15,31 +15,32 @@ from transformers import BertForSequenceClassification, AutoTokenizer
 python gram_fit.py
 """
 
-batch_size = 128
+batch_size = 64
+lr = 2e-5
 epochs = 5
 dev = torch.device("cuda")
 train_data = "../data/cola/in_domain_train.tsv"
 dev_data = "../data/cola/out_of_domain_dev.tsv"
 # dev_data = "../data/cola/in_domain_dev.tsv"
 
-# tkz = AutoTokenizer.from_pretrained("roberta-base", mirror="tuna")
-
-# roberta = RobertaForSequenceClassification.from_pretrained("roberta-base", mirror="tuna").to(dev)
+#tkz = AutoTokenizer.from_pretrained("roberta-base", mirror="tuna")
+#
+#roberta = RobertaForSequenceClassification.from_pretrained("roberta-base", mirror="tuna").to(dev)
 
 tkz = AutoTokenizer.from_pretrained("bert-base-uncased", mirror="tuna")
 
 roberta = BertForSequenceClassification.from_pretrained("bert-base-uncased", mirror="tuna").to(dev)
 
-optimizer = torch.optim.AdamW(roberta.parameters(), lr=1e-5)
+optimizer = torch.optim.AdamW(roberta.parameters(), lr=lr)
 
 class ClfDataset(Dataset):
     def __init__(self, sentence_label_pairs):
         super().__init__()
         self.samples  = sentence_label_pairs
-    
+
     def __getitem__(self, index):
         return self.samples[index]
-    
+
     def __len__(self):
         return len(self.samples)
 
@@ -95,8 +96,6 @@ for epoch in range(epochs):
     fit(roberta, train_loader, optimizer, epoch)
     acc = evaluate(roberta, dev_loader)
     if acc > best_acc:
+        torch.save(roberta.state_dict(), f"../dump/eval_disc.pth")
         print("Acc: %.4f -> %.4f" % (best_acc, acc))
         best_acc = acc
-    else:
-        print("Done")
-        break
