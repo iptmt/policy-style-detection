@@ -6,4 +6,4 @@ echo "================================="
 
 python acc.py $1 $2
 python sim.py $1 $2
-python ppl.py $1 $2
+python gram.py $2
