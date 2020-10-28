@@ -36,10 +36,10 @@ epochs_masker = 40
 batch_size = 512
 max_seq_len = None # no limit
 noise_p = 0.2
-delta = 0.70
+delta = 0.65
 
 rollouts = 8
-gamma = 0.85
+gamma = 0.90
 
 dev = torch.device("cuda:0")
 vocab_file = f"../dump/vocab_{data}.bin"
