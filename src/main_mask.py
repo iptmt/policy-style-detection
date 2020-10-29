@@ -39,7 +39,7 @@ noise_p = 0.2
 delta = 0.65
 
 rollouts = 8
-gamma = 0.90
+gamma = 0.80
 
 dev = torch.device("cuda:0")
 vocab_file = f"../dump/vocab_{data}.bin"
