@@ -11,7 +11,7 @@ import torch.nn.functional as F
 from tqdm import tqdm, trange
 from torch.utils.data import DataLoader
 
-from nets.classifier import TextRNN
+from module.classifier import TextRNN
 from vocab import Vocab
 from dataset import StyleDataset
 from trainer import MaskTrainer
@@ -40,7 +40,7 @@ output_file = f"../../tmp/{ds}.test.mask.attn"
 vocab = Vocab.load(vocab_file)
 model = TextRNN(len(vocab)).to(dev)
 
-optimizer = torch.optim.Adam(model.parameters(), lr=3e-4)
+optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
 
 def train_clf(dl, epoch):
     model.train()
@@ -99,14 +99,14 @@ if md == "fit":
         print(f"Dev Acc: {acc}")
         if acc > best_acc:
             print(f"Update clf dump {int(acc*1e4)/1e4} <- {int(best_acc*1e4)/1e4}")
-            torch.save(model.state_dict(), f"../../tmp/clf_{ds}.pth")
+            torch.save(model.state_dict(), f"../../dump/clf_{ds}_bsl.pth")
             best_acc = acc
 
 if md == "inf":
     test_dataset = StyleDataset(test_files, vocab)
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, collate_fn=StyleDataset.collate_fn)
 
-    model.load_state_dict(torch.load(f"../../tmp/clf_{ds}.pth"))
+    model.load_state_dict(torch.load(f"../../dump/clf_{ds}_bsl.pth"))
 
     results = eval_inf(test_loader)
 

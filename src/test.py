@@ -5,4 +5,5 @@ b = torch.randn([2, 2])
 
 print(a)
 print(b)
-print(a>b)
+c = torch.min(a, b)
+print(c)
