@@ -42,7 +42,7 @@ class MaskTrainer:
             self.clock.update(
                 {"Loss": loss_r.item(), "R": r_mean.item()}
             )
-            time.sleep(0.03)
+            time.sleep(0.04)
             
 
     def evaluate(self, dl):
