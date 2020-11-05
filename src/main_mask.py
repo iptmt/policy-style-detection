@@ -32,7 +32,7 @@ logger.info(f"mode: {mode}")
 # parameters
 #=============================================================#
 epochs_clf = 10
-epochs_masker = 30
+epochs_masker = 40
 batch_size = 512
 max_seq_len = None # no limit
 noise_p = 0.15
