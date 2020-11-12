@@ -17,7 +17,7 @@ from vocab import PAD_ID
 python main_mask.py [corpus name] [`train' or `test']
 """
 
-seed_num = 110
+seed_num = 120
 random.seed(seed_num)
 torch.manual_seed(seed_num)
 np.random.seed(seed_num)
@@ -32,13 +32,13 @@ logger.info(f"mode: {mode}")
 # parameters
 #=============================================================#
 epochs_clf = 10
-epochs_masker = 40
+epochs_masker = 50
 batch_size = 512
 max_seq_len = None # no limit
 noise_p = 0.15
 delta = 0.65
 
-rollouts = 4
+rollouts = 6
 gamma = 0.85
 
 dev = torch.device("cuda:0")
@@ -54,7 +54,7 @@ vb = Vocab.load(vocab_file)
 
 # create model
 #=============================================================#
-clf = RelGAN_D(len(vb))
+clf = TextCNN(len(vb))
 masker = Masker(len(vb), delta)
 #=============================================================#
 
@@ -70,7 +70,7 @@ if mode == "train":
     # construct trainer
     #=============================================================#
     optimize_clf = torch.optim.Adam(clf.parameters(), lr=1e-3)
-    optimize_masker = torch.optim.Adam(masker.parameters(), lr=1e-4)
+    optimize_masker = torch.optim.Adam(masker.parameters(), lr=1e-3)
     model_trainer = MaskTrainer(masker, clf, dev, rollouts, gamma, optimize_masker, optimize_clf)
     #=============================================================#
 
