@@ -126,7 +126,7 @@ elif mode == "train":
     # training
     #=============================================================#
     best_loss = model_trainer.evaluate(dev_loader)
-    for epoch in range(3):
+    for epoch in range(2):
         logger.info(f"Training InsertLM -- Epoch {epoch}")
         model_trainer.train(train_loader)
         loss = model_trainer.evaluate(dev_loader)
