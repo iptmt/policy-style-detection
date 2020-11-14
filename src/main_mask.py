@@ -17,7 +17,7 @@ from vocab import PAD_ID
 python main_mask.py [corpus name] [`train' or `test']
 """
 
-seed_num = 120
+seed_num = 110
 random.seed(seed_num)
 torch.manual_seed(seed_num)
 np.random.seed(seed_num)
