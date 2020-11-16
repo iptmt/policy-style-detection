@@ -14,7 +14,7 @@ from tool import create_logger
 from data_util import noise_text
 from vocab import PLH
 
-seed_num = 79
+seed_num = 110
 random.seed(seed_num)
 torch.manual_seed(seed_num)
 np.random.seed(seed_num)
@@ -32,7 +32,7 @@ epochs = 10
 batch_size = 512
 max_seq_len = None # no limit
 dev = torch.device("cuda:0")
-noise_p = 0.3
+noise_p = 0.5
 
 vocab_file = f"../dump/vocab_{data}.bin"
 vb = Vocab.load(vocab_file)

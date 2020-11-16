@@ -150,7 +150,7 @@ class MLMTrainer:
             loss = self.ce(logits.reshape(-1, logits.size(-1)), x.reshape(-1))
             losses.append(loss.item())
         return sum(losses) / len(losses)
-    
+
     def rank_words(self, dl, file_name, vocab):
         file = open(file_name, "w+", encoding="utf-8")
         loss_cal = nn.CrossEntropyLoss(ignore_index=0, reduction="none")
@@ -197,7 +197,7 @@ class InsertLMTrainer:
         self.ce = nn.CrossEntropyLoss(ignore_index=-1)
         self.mse = nn.MSELoss(reduction="none")
         self.clock = LossClock(["Loss_vocab", "Loss_position"], 200)
-    
+
     def train(self, dl):
         self.ilm.train()
         for inp, out, pos, label in dl:
@@ -213,7 +213,7 @@ class InsertLMTrainer:
 
             self.clock.update({"Loss_vocab": loss_v.item(), "Loss_position": loss_p.item()})
             time.sleep(0.03) # prevent the overheat of GPU
-    
+
     def evaluate(self, dl):
         self.ilm.eval()
         losses = []
@@ -226,7 +226,7 @@ class InsertLMTrainer:
             loss_p = self.mse(logits_p, pos).sum(-1).mean()
             losses.append(loss_v.item() + loss_p.item())
         return sum(losses) / len(losses)
-    
+
     def transfer(self, dl, file_name, vocab):
         self.ilm.eval()
         file = open(file_name, "w+", encoding="utf-8")
@@ -255,7 +255,7 @@ class InsertLMTrainer:
                 positions = logits_p.argmax(-1) # B,
                 mask = (positions != 0).long() * mask
                 temp = split_and_merge(out, positions, mask)
-            
+
             for s, s_tsf, lb in zip(x.unbind(0), out.unbind(0), label.unbind(0)):
                 s, s_tsf = vocab.tensor_to_sent(s), vocab.tensor_to_sent(s_tsf)
                 file.write(
