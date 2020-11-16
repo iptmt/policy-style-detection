@@ -156,6 +156,7 @@ class MLMTrainer:
         loss_cal = nn.CrossEntropyLoss(ignore_index=0, reduction="none")
         self.mlm.eval()
         for x, temp, ph_mask, y in dl:
+            time.sleep(0.05)
             x, temp, ph_mask, y = x.to(self.dev), temp.to(self.dev), ph_mask.to(self.dev), y.to(self.dev)
             orders = ph_mask.new_zeros(ph_mask.shape)
             step = 1
