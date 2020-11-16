@@ -32,10 +32,10 @@ logger.info(f"mode: {mode}")
 # parameters
 #=============================================================#
 epochs_clf = 10
-epochs_masker = 20
+epochs_masker = 40
 batch_size = 512
 max_seq_len = None # no limit
-noise_p = 0.15
+noise_p = 0.1
 delta = 0.65
 
 rollouts = 8
@@ -70,7 +70,7 @@ if mode == "train":
     # construct trainer
     #=============================================================#
     optimize_clf = torch.optim.Adam(clf.parameters(), lr=1e-3)
-    optimize_masker = torch.optim.Adam(masker.parameters(), lr=5e-4)
+    optimize_masker = torch.optim.Adam(masker.parameters(), lr=3e-4)
     model_trainer = MaskTrainer(masker, clf, dev, rollouts, gamma, optimize_masker, optimize_clf)
     #=============================================================#
 

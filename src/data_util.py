@@ -113,12 +113,12 @@ def insert_noise_ids(text, noise_id, p=0.15):
         if i < p:
             # new_text += [noise_id]
             r = random.random()
-            if r <= 0.7:
+            if r <= 0.85:
                 new_text += [noise_id]
-            elif 0.7 < r <= 0.95:
-                new_text += [noise_id] * 2
+            # elif 0.7 < r <= 0.95:
+            #     new_text += [noise_id] * 2
             else:
-                new_text += [noise_id] * 3
+                new_text += [noise_id] * 2
         new_text.append(x)
     return new_text
 
