@@ -67,7 +67,7 @@ class MaskTrainer:
             self.masker.eval()
             self.clf.eval()
             with torch.no_grad():
-                outputs = self.masker.sample_sequence(x, y, pad_mask, 8, self.clf, inf=True)
+                outputs = self.masker.sample_sequence(x, y, pad_mask, 8, self.clf)
                 for id_bat, sent_set in enumerate(outputs):
                     sent_set = list(sent_set)
                     sent_set.sort(key=lambda pair: pair[1].item(), reverse=True)
