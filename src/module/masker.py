@@ -73,7 +73,7 @@ class Masker(nn.Module):
             rewards.append(self.f_r(r_cp, r_sty))
         return probs, rewards
 
-    def sample_sequence(self, inp, label, pad_mask, k, clf):
+    def sample_sequence(self, inp, label, pad_mask, k, clf, inf=False):
         # embed
         inp, label, pad_mask = inp.repeat(k, 1), label.repeat(k), pad_mask.repeat(k, 1)
         hybrid_emb, token_emb = self.hybrid_embed(inp, label, return_token_emb=True)
@@ -97,7 +97,7 @@ class Masker(nn.Module):
             pred_ori = clf(inp)
             pred_tgt = clf(inp * masks)
         r_sty = (1 - 2 * label.float()) * (pred_tgt - pred_ori)
-        rewards = self.f_r(r_cp, r_sty)
+        rewards = self.f_r(r_cp, r_sty) if not inf else r_sty
 
         # sorting
         chunks = zip((inp * masks).chunk(k, dim=0), rewards.chunk(k, dim=0))
