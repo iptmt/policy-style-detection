@@ -10,7 +10,7 @@ class HybridEmbedding(nn.Module):
     
     def forward(self, tokens, labels, return_token_emb=False):
         token_emb = self.token_embedding(tokens)
-        hybrid_emb = token_emb + self.posit_embedding(torch.arange(tokens.size(1)).to(tokens.device).long().unsqueeze(0))
+        hybrid_emb = token_emb# + self.posit_embedding(torch.arange(tokens.size(1)).to(tokens.device).long().unsqueeze(0))
         if labels is not None:
             hybrid_emb += self.style_embedding(labels.unsqueeze(1))
         if return_token_emb:

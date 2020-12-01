@@ -15,13 +15,13 @@ class Masker(nn.Module):
         self.hybrid_embed = HybridEmbedding(n_vocab, d_model, n_class)
 
         # extract context
-        self.ctx_extractor = nn.TransformerEncoder(
-            nn.TransformerEncoderLayer(d_model=d_model, nhead=n_heads, dim_feedforward=4*d_model), 
-            num_layers=n_layers
-        )
-        # self.ctx_extractor = nn.GRU(
-        #     input_size=d_model, hidden_size=d_model, num_layers=1, batch_first=True, bidirectional=True
+        # self.ctx_extractor = nn.TransformerEncoder(
+        #     nn.TransformerEncoderLayer(d_model=d_model, nhead=n_heads, dim_feedforward=4*d_model), 
+        #     num_layers=n_layers
         # )
+        self.ctx_extractor = nn.GRU(
+            input_size=d_model, hidden_size=d_model, num_layers=1, batch_first=True, bidirectional=True
+        )
 
         # decision maker
         self.gru_unit = nn.GRU(
@@ -43,8 +43,8 @@ class Masker(nn.Module):
     def forward(self, inp, label, pad_mask, k, clf):
         # embed
         hybrid_emb, token_emb = self.hybrid_embed(inp, label, return_token_emb=True)
-        ctx = self.ctx_extractor(hybrid_emb.transpose(0, 1)).transpose(0, 1)
-        # ctx, _ = self.ctx_extractor(hybrid_emb)
+        # ctx = self.ctx_extractor(hybrid_emb.transpose(0, 1)).transpose(0, 1)
+        ctx, _ = self.ctx_extractor(hybrid_emb)
 
         emb_prev = torch.zeros(inp.size(0), 1, self.d_model, dtype=torch.float, device=inp.device)
 
@@ -77,8 +77,8 @@ class Masker(nn.Module):
         # embed
         inp, label, pad_mask = inp.repeat(k, 1), label.repeat(k), pad_mask.repeat(k, 1)
         hybrid_emb, token_emb = self.hybrid_embed(inp, label, return_token_emb=True)
-        ctx = self.ctx_extractor(hybrid_emb.transpose(0, 1)).transpose(0, 1)
-        # ctx, _ = self.ctx_extractor(hybrid_emb)
+        # ctx = self.ctx_extractor(hybrid_emb.transpose(0, 1)).transpose(0, 1)
+        ctx, _ = self.ctx_extractor(hybrid_emb)
 
         emb_prev = torch.zeros(inp.size(0), 1, self.d_model, dtype=torch.float, device=inp.device)
         h_t, masks = None, []
