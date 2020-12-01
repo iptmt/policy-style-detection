@@ -28,7 +28,7 @@ class Masker(nn.Module):
             input_size=d_model, hidden_size=d_model, num_layers=1, batch_first=True
         )
 
-        self.fuse_1 = nn.Linear(2 * d_model, d_model)
+        self.fuse_1 = nn.Linear(3 * d_model, d_model)
 
         self.fuse_2 = nn.Linear(2 * d_model, d_model)
 
@@ -122,8 +122,6 @@ class Masker(nn.Module):
     
     def exec_step(self, emb_t, ctx_t, emb_prev, h_t):
         o_t, h_t = self.gru_unit(emb_prev, h_t)
-        # fused_feature = torch.cat([emb_t, ctx_t, o_t], dim=-1)
-        # logits_t = self.feature2logits(fused_feature)
         feat_1 = self.fuse_1(torch.cat([emb_t, ctx_t], dim=-1))
         feat_2 = self.fuse_2(torch.cat([o_t, torch.relu(feat_1)], dim=-1))
         logits_t = self.feature2logits(feat_2)
