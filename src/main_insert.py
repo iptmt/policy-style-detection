@@ -32,7 +32,7 @@ epochs = 10
 batch_size = 512
 max_seq_len = None # no limit
 dev = torch.device("cuda:0")
-noise_p = 0.5
+noise_p = 0.3
 
 vocab_file = f"../dump/vocab_{data}.bin"
 vb = Vocab.load(vocab_file)
