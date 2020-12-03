@@ -102,7 +102,11 @@ def mask_noise_ids(text, noise_id, p=0.15):
     text = np.array(text, dtype=np.long)
     for idx, i in enumerate(inds):
         if i < p:
-            text[idx: idx + math.ceil(random.random() * 3)] = noise_id
+            r = random.random()
+            if r <= 0.85:
+                text[idx: idx + 1] = noise_id
+            else:
+                text[idx: idx + 2] = noise_id
     return text.tolist()
     # return list(map(lambda x: x[0] if x[1] > p else noise_id, zip(text, inds)))
 
@@ -111,12 +115,9 @@ def insert_noise_ids(text, noise_id, p=0.15):
     new_text = []
     for x, i in zip(text, inds):
         if i < p:
-            # new_text += [noise_id]
             r = random.random()
             if r <= 0.85:
                 new_text += [noise_id]
-            # elif 0.7 < r <= 0.95:
-            #     new_text += [noise_id] * 2
             else:
                 new_text += [noise_id] * 2
         new_text.append(x)

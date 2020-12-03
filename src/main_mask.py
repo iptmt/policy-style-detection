@@ -17,7 +17,7 @@ from vocab import PAD_ID
 python main_mask.py [corpus name] [`train' or `test']
 """
 
-seed_num = 110
+seed_num = 11
 random.seed(seed_num)
 torch.manual_seed(seed_num)
 np.random.seed(seed_num)
@@ -35,7 +35,7 @@ epochs_clf = 10
 epochs_masker = 40
 batch_size = 512
 max_seq_len = None # no limit
-noise_p = 0.1
+noise_p = 0.15
 delta = 0.65
 
 rollouts = 8
