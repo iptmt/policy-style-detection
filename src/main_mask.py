@@ -42,7 +42,7 @@ rollouts = 8
 gamma = 0.85
 
 lr_clf = 1e-3
-lr_masker = 5e-4
+lr_masker = 3e-4
 
 dev = torch.device("cuda:0")
 vocab_file = f"../dump/vocab_{data}.bin"
@@ -107,10 +107,6 @@ if mode == "train":
     #=============================================================#
     best_r = model_trainer.evaluate(dev_loader)
     for epoch in range(epochs_masker):
-        # change lr every 5 epochs
-        print(lr_masker / (2 ** (epoch // 5)))
-        for g in optimize_masker.param_groups:
-            g['lr'] = lr_masker / (2 ** (epoch // 5))
         logger.info(f"Training masker -- Epoch {epoch}")
         model_trainer.train(train_loader)
         r = model_trainer.evaluate(dev_loader)
