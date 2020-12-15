@@ -1,0 +1,6 @@
+jobname: qwh-det-delta
+tasks:
+  - command: ["bash", "/code/qwh/policy-style-detection/src/run.sh"]
+    image: registry.cn-zhangjiakou.aliyuncs.com/iie-lct/qwh:pth-1.6_cuda-10.1
+    resources:
+      gpu: "1"

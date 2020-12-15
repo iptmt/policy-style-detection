@@ -1,3 +1,2 @@
-python main_rank.py yelp test
-python main_insert.py yelp train
-python main_insert.py yelp test
+python /code/qwh/policy-style-detection/src/main_mask.py yelp train
+python /code/qwh/policy-style-detection/src/main_mask.py yelp inf
