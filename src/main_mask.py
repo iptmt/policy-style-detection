@@ -22,13 +22,6 @@ random.seed(seed_num)
 torch.manual_seed(seed_num)
 np.random.seed(seed_num)
 
-logger = create_logger("../log/", "mask.log")
-
-data = sys.argv[1]
-logger.info(f"data: {data}")
-mode = sys.argv[2]
-logger.info(f"mode: {mode}")
-
 # parameters
 #=============================================================#
 epochs_clf = 10
@@ -41,11 +34,20 @@ delta = 0.65
 rollouts = 8
 gamma = 0.85
 
+logger = create_logger("/code/qwh/policy-style-detection/log/", f"mask-{delta}.log")
+
+data = sys.argv[1]
+logger.info(f"data: {data}")
+mode = sys.argv[2]
+logger.info(f"mode: {mode}")
+
+
+
 dev = torch.device("cuda:0")
-vocab_file = f"../dump/vocab_{data}.bin"
-train_files = [f"../data/{data}/style.train.0", f"../data/{data}/style.train.1"]
-dev_files = [f"../data/{data}/style.dev.0", f"../data/{data}/style.dev.1"]
-test_files = [f"../data/{data}/style.test.0", f"../data/{data}/style.test.1"]
+vocab_file = f"/code/qwh/policy-style-detection/dump/vocab_{data}.bin"
+train_files = [f"/code/qwh/policy-style-detection/data/{data}/style.train.0", f"/code/qwh/policy-style-detection/data/{data}/style.train.1"]
+dev_files = [f"/code/qwh/policy-style-detection/data/{data}/style.dev.0", f"/code/qwh/policy-style-detection/data/{data}/style.dev.1"]
+test_files = [f"/code/qwh/policy-style-detection/data/{data}/style.test.0", f"/code/qwh/policy-style-detection/data/{data}/style.test.1"]
 #=============================================================#
 
 # load sources
@@ -84,10 +86,10 @@ if mode == "train":
         logger.info(f"Dev Acc: {acc}")
         if acc > best_acc:
             logger.info(f"Update clf dump {int(acc*1e4)/1e4} <- {int(best_acc*1e4)/1e4}")
-            torch.save(clf.state_dict(), f"../dump/clf_{data}.pth")
+            torch.save(clf.state_dict(), f"/code/qwh/policy-style-detection/dump/clf_{data}_{delta}.pth")
             best_acc = acc
         logger.info("=" * 50)
-    clf.load_state_dict(torch.load(f"../dump/clf_{data}.pth"))
+    clf.load_state_dict(torch.load(f"/code/qwh/policy-style-detection/dump/clf_{data}_{delta}.pth"))
 
     del train_dataset, dev_dataset, train_loader, dev_loader
 
@@ -109,7 +111,7 @@ if mode == "train":
         r = model_trainer.evaluate(dev_loader)
         if r > best_r:
             logger.info(f"Update masker dump {int(r*1e4)/1e4} <- {int(best_r*1e4)/1e4}")
-            torch.save(masker.state_dict(), f"../dump/masker_{data}_{delta}.pth")
+            torch.save(masker.state_dict(), f"/code/qwh/policy-style-detection/dump/masker_{data}_{delta}.pth")
             best_r = r
         logger.info("=" * 50)
     #=============================================================#
@@ -121,13 +123,13 @@ elif mode == "inf":
     dev_loader = DataLoader(dev_dataset, batch_size=batch_size, shuffle=False, collate_fn=StyleDataset.collate_fn)
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, collate_fn=StyleDataset.collate_fn)
 
-    masker.load_state_dict(torch.load(f"../dump/masker_{data}_{delta}.pth"))
-    clf.load_state_dict(torch.load(f"../dump/clf_{data}.pth"))
+    masker.load_state_dict(torch.load(f"/code/qwh/policy-style-detection/dump/masker_{data}_{delta}.pth"))
+    clf.load_state_dict(torch.load(f"/code/qwh/policy-style-detection/dump/clf_{data}_{delta}.pth"))
     model_trainer = MaskTrainer(masker, clf, dev, rollouts, gamma, None, None)
 
     # Inference
     #=============================================================#
-    model_trainer.inference(train_loader, f"../tmp/{data}.train.mask", vb)
-    model_trainer.inference(dev_loader, f"../tmp/{data}.dev.mask", vb)
-    model_trainer.inference(test_loader, f"../tmp/{data}.test.mask", vb)
+    model_trainer.inference(train_loader, f"/code/qwh/policy-style-detection/tmp/{data}_{delta}.train.mask", vb)
+    model_trainer.inference(dev_loader, f"/code/qwh/policy-style-detection/tmp/{data}_{delta}.dev.mask", vb)
+    model_trainer.inference(test_loader, f"/code/qwh/policy-style-detection/tmp/{data}_{delta}.test.mask", vb)
     #=============================================================#

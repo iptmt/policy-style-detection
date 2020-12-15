@@ -91,10 +91,10 @@ if __name__ == "__main__":
     """
     data = sys.argv[1]
     freq = sys.argv[2]
-    files = [f"../data/{data}/style.train.0", f"../data/{data}/style.train.1"]
+    files = [f"/code/qwh/policy-style-detection/data/{data}/style.train.0", f"/code/qwh/policy-style-detection/data/{data}/style.train.1"]
     vocab = Vocab(files, int(freq))
     print(f"dataset = {data}")
     print(f"vocab size = {len(vocab)}")
     # save & load
-    vocab.save(f"../dump/vocab_{data}.bin")
-    v2 = Vocab.load(f"../dump/vocab_{data}.bin")
+    vocab.save(f"/code/qwh/policy-style-detection/dump/vocab_{data}.bin")
+    v2 = Vocab.load(f"/code/qwh/policy-style-detection/dump/vocab_{data}.bin")
