@@ -103,7 +103,7 @@ def mask_noise_ids(text, noise_id, p=0.15):
     for idx, i in enumerate(inds):
         if i < p:
             r = random.random()
-            if r <= 0.85:
+            if r <= 0.75:
                 text[idx: idx + 1] = noise_id
             else:
                 text[idx: idx + 2] = noise_id
@@ -116,7 +116,7 @@ def insert_noise_ids(text, noise_id, p=0.15):
     for x, i in zip(text, inds):
         if i < p:
             r = random.random()
-            if r <= 0.85:
+            if r <= 0.75:
                 new_text += [noise_id]
             else:
                 new_text += [noise_id] * 2
