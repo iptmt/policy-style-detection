@@ -84,10 +84,10 @@ if mode == "train":
         logger.info(f"Dev Acc: {acc}")
         if acc > best_acc:
             logger.info(f"Update clf dump {int(acc*1e4)/1e4} <- {int(best_acc*1e4)/1e4}")
-            torch.save(clf.state_dict(), f"../dump/clf_{data}.pth")
+            torch.save(clf.state_dict(), f"../dump/clf_{data}_{delta}.pth")
             best_acc = acc
         logger.info("=" * 50)
-    clf.load_state_dict(torch.load(f"../dump/clf_{data}.pth"))
+    clf.load_state_dict(torch.load(f"../dump/clf_{data}_{delta}.pth"))
 
     del train_dataset, dev_dataset, train_loader, dev_loader
 
@@ -122,7 +122,7 @@ elif mode == "inf":
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, collate_fn=StyleDataset.collate_fn)
 
     masker.load_state_dict(torch.load(f"../dump/masker_{data}_{delta}.pth"))
-    clf.load_state_dict(torch.load(f"../dump/clf_{data}.pth"))
+    clf.load_state_dict(torch.load(f"../dump/clf_{data}_{delta}.pth"))
     model_trainer = MaskTrainer(masker, clf, dev, rollouts, gamma, None, None)
 
     # Inference
