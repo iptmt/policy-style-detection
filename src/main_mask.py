@@ -14,7 +14,7 @@ from tool import create_logger
 from vocab import PAD_ID
 
 """
-python main_mask.py [corpus name] [`train' or `test']
+python main_mask.py [corpus name] [`train' or `inf'] [delta]
 """
 
 seed_num = 11
@@ -28,6 +28,8 @@ data = sys.argv[1]
 logger.info(f"data: {data}")
 mode = sys.argv[2]
 logger.info(f"mode: {mode}")
+delta = float(sys.argv[3])
+logger.info(f"delta: {delta}")
 
 # parameters
 #=============================================================#
@@ -36,7 +38,7 @@ epochs_masker = 50
 batch_size = 512
 max_seq_len = None # no limit
 noise_p = 0.15
-delta = 0.65
+# delta = 0.65
 
 rollouts = 8
 gamma = 0.85
