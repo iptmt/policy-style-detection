@@ -7,7 +7,7 @@ if [ ! -f $log_f ]; then
     touch $log_f
 fi
 
-for i in $(seq 0.3 0.1 0.9)
+for i in $(seq 0.8 0.1 0.8)
 do
     echo $i >> $log_f
     cd ../src

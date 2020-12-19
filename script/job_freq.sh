@@ -7,9 +7,9 @@ if [ ! -f $log_f ]; then
     touch $log_f
 fi
 
-for j in $(seq 0 1 10)
+for i in $(seq 9 1 9)
 do
-    i=$((2**$j))
+    #i=$((2**$j))
     echo $i >> $log_f
     cd ../src/baseline
     python freq_ratio.py $ds inf $i >> /dev/null

@@ -7,7 +7,7 @@ if [ ! -f $log_f ]; then
     touch $log_f
 fi
 
-for i in $(seq 0 1 10)
+for i in $(seq 1.5 0.5 6)
 do
     echo $i >> $log_f
     cd ../src/baseline
