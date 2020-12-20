@@ -99,14 +99,14 @@ if md == "fit":
         print(f"Dev Acc: {acc}")
         if acc > best_acc:
             print(f"Update clf dump {int(acc*1e4)/1e4} <- {int(best_acc*1e4)/1e4}")
-            torch.save(model.state_dict(), f"../../dump/clf_{ds}_bsl.pth")
+            torch.save(model.state_dict(), f"../../dump/clf_{ds}_rnn_attn.pth")
             best_acc = acc
 
 if md == "inf":
     test_dataset = StyleDataset(test_files, vocab)
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, collate_fn=StyleDataset.collate_fn)
 
-    model.load_state_dict(torch.load(f"../../dump/clf_{ds}_bsl.pth"))
+    model.load_state_dict(torch.load(f"../../dump/clf_{ds}_rnn_attn.pth"))
 
     results = eval_inf(test_loader)
 

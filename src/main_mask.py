@@ -14,7 +14,7 @@ from tool import create_logger
 from vocab import PAD_ID
 
 """
-python main_mask.py [corpus name] [`train' or `test']
+python main_mask.py [corpus name] [`train' or `inf'] [delta]
 """
 
 seed_num = 11
@@ -28,15 +28,25 @@ data = sys.argv[1]
 logger.info(f"data: {data}")
 mode = sys.argv[2]
 logger.info(f"mode: {mode}")
+delta = float(sys.argv[3])
+logger.info(f"delta: {delta}")
 
 # parameters
 #=============================================================#
 epochs_clf = 10
+<<<<<<< HEAD
 epochs_masker = 20
 batch_size = 512
 max_seq_len = None # no limit
 noise_p = 0.2
 delta = 0.65
+=======
+epochs_masker = 50
+batch_size = 512
+max_seq_len = None # no limit
+noise_p = 0.15
+# delta = 0.65
+>>>>>>> cab56f163e86696cfe6b86cd1a0e8bf5c6908de9
 
 rollouts = 8
 gamma = 0.85
@@ -72,8 +82,13 @@ if mode == "train":
 
     # construct trainer
     #=============================================================#
+<<<<<<< HEAD
     optimize_clf = torch.optim.Adam(clf.parameters(), lr=lr_clf)
     optimize_masker = torch.optim.Adam(masker.parameters(), lr=lr_masker)
+=======
+    optimize_clf = torch.optim.Adam(clf.parameters(), lr=1e-3)
+    optimize_masker = torch.optim.Adam(masker.parameters(), lr=1e-4)
+>>>>>>> cab56f163e86696cfe6b86cd1a0e8bf5c6908de9
     model_trainer = MaskTrainer(masker, clf, dev, rollouts, gamma, optimize_masker, optimize_clf)
     #=============================================================#
 
@@ -87,10 +102,10 @@ if mode == "train":
         logger.info(f"Dev Acc: {acc}")
         if acc > best_acc:
             logger.info(f"Update clf dump {int(acc*1e4)/1e4} <- {int(best_acc*1e4)/1e4}")
-            torch.save(clf.state_dict(), f"../dump/clf_{data}.pth")
+            torch.save(clf.state_dict(), f"../dump/clf_{data}_{delta}.pth")
             best_acc = acc
         logger.info("=" * 50)
-    clf.load_state_dict(torch.load(f"../dump/clf_{data}.pth"))
+    clf.load_state_dict(torch.load(f"../dump/clf_{data}_{delta}.pth"))
 
     del train_dataset, dev_dataset, train_loader, dev_loader
 
@@ -125,7 +140,7 @@ elif mode == "inf":
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, collate_fn=StyleDataset.collate_fn)
 
     masker.load_state_dict(torch.load(f"../dump/masker_{data}_{delta}.pth"))
-    clf.load_state_dict(torch.load(f"../dump/clf_{data}.pth"))
+    clf.load_state_dict(torch.load(f"../dump/clf_{data}_{delta}.pth"))
     model_trainer = MaskTrainer(masker, clf, dev, rollouts, gamma, None, None)
 
     # Inference
