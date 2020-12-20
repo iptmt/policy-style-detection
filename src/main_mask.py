@@ -34,19 +34,11 @@ logger.info(f"delta: {delta}")
 # parameters
 #=============================================================#
 epochs_clf = 10
-<<<<<<< HEAD
-epochs_masker = 20
-batch_size = 512
-max_seq_len = None # no limit
-noise_p = 0.2
-delta = 0.65
-=======
 epochs_masker = 50
 batch_size = 512
 max_seq_len = None # no limit
 noise_p = 0.15
 # delta = 0.65
->>>>>>> cab56f163e86696cfe6b86cd1a0e8bf5c6908de9
 
 rollouts = 8
 gamma = 0.85
