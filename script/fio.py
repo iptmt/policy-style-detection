@@ -22,6 +22,12 @@ def read_csv(file_name):
             line_count += 1
         return outputs
 
+def write_csv(file_name, obj):
+    with open(file_name, mode='w') as f:
+        writer = csv.writer(f, delimiter='\t', lineterminator = '\n')
+        writer.writerows(obj)
+
+
 def read_tsv(file_name):
     with open(file_name, 'r') as f:
         reader = csv.reader(f, delimiter="\t")

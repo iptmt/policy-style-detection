@@ -28,8 +28,8 @@ data = sys.argv[1]
 logger.info(f"data: {data}")
 mode = sys.argv[2]
 logger.info(f"mode: {mode}")
-delta = float(sys.argv[3])
-logger.info(f"delta: {delta}")
+# delta = float(sys.argv[3])
+# logger.info(f"delta: {delta}")
 
 # parameters
 #=============================================================#
@@ -38,13 +38,13 @@ epochs_masker = 50
 batch_size = 512
 max_seq_len = None # no limit
 noise_p = 0.15
-# delta = 0.65
+delta = 0.65
 
 rollouts = 8
 gamma = 0.85
 
 lr_clf = 1e-3
-lr_masker = 3e-4
+lr_masker = 1e-4
 
 dev = torch.device("cuda:0")
 vocab_file = f"../dump/vocab_{data}.bin"
@@ -74,13 +74,8 @@ if mode == "train":
 
     # construct trainer
     #=============================================================#
-<<<<<<< HEAD
     optimize_clf = torch.optim.Adam(clf.parameters(), lr=lr_clf)
     optimize_masker = torch.optim.Adam(masker.parameters(), lr=lr_masker)
-=======
-    optimize_clf = torch.optim.Adam(clf.parameters(), lr=1e-3)
-    optimize_masker = torch.optim.Adam(masker.parameters(), lr=1e-4)
->>>>>>> cab56f163e86696cfe6b86cd1a0e8bf5c6908de9
     model_trainer = MaskTrainer(masker, clf, dev, rollouts, gamma, optimize_masker, optimize_clf)
     #=============================================================#
 
