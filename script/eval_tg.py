@@ -16,4 +16,10 @@ f1_ = "entagged_parallel.test.tagged.P_9"
 tt0 = [x + "\t" + replace(x_) + "\t" + "0" for x, x_ in zip(read(base + f0), read(base + f0_))]
 tt1 = [x + "\t" + replace(x_) + "\t" + "1" for x, x_ in zip(read(base + f1), read(base + f1_))]
 
-write(tmp + f"{ds}.test.mask.tfidf", tt0 + tt1)
+tt = tt0 + tt1
+if ds == "yelp":
+    tt = tt + ["none\tnone\t0"] * (1000 - len(tt))
+elif ds == "gyafc":
+    tt = tt + ["none\tnone\t0"] * (1332 - len(tt))
+
+write(tmp + f"{ds}.test.mask.tfidf", tt)
