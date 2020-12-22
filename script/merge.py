@@ -28,9 +28,9 @@ def check(inp, out):
 
 
 if __name__ == "__main__":
-    model = "tg"
+    model = "unmt"
     data = "gyafc"
 
-    reorg([f"../data/gyafc/style.test.0", f"../out/{model}/{data}_test.tsf"], f"../out/{model}/{data}_test.tsf", [0, 1])
+    # reorg([f"../data/gyafc/style.test.0", f"../out/{model}/{data}_test.tsf"], f"../out/{model}/{data}_test.tsf", [0, 1])
     append(f"../out/{model}/{data}_test.tsf", f"../out/{model}/{data}_test.tsf", "1")
     # check(f"../out/{model}/{data}_test.tsf", f"../out/{model}/{data}_test.tsf")

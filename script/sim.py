@@ -4,6 +4,7 @@ import os
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 import sys
 import numpy as np
+from fio import read
 from collections import defaultdict
 from bert_score import BERTScorer
 from bleurt import score
@@ -36,9 +37,20 @@ for index in ref_dict:
         refs_i += [line.strip() for line in open(file_path, 'r')]
     ref_dict[index] = refs_i
 ref_list = [refs for refs in ref_dict.values()]
+
+if len(cands) != len(ref_list[0]): # w.r.t length: ref0=ref1=ref2=ref3
+    idxs = [int(idx) for idx in read("../data/gyafc/cwsr_ver_idx.txt")]
+    # cands = [cands[idx] for idx in idxs]
+    ref_list = [[refs[idx] for idx in idxs] for refs in ref_list]
+
 ref_sents = [ref for refs in ref_list for ref in refs]
 ref_tuple = list(zip(*ref_list))
 
+# special case CWSR and PTO on GYAFC
+# if len(cands) != len(ref_tuple):
+#     idxs = set([int(idx) for idx in read("../data/gyafc/cwsr_ver_idx.txt")])
+#     ref_tuple = list(filter(lambda pair: pair[0] in idxs, enumerate(ref_tuple)))
+    
 ## uncomment following block to enable BLEU evaluation
 # cands = [c.strip().split() for c in cands]
 # ref_tuple = [[ref.strip().split() for ref in refs] for refs in ref_tuple]
