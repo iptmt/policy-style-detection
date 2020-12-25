@@ -33,9 +33,9 @@ parser.add_argument('-dev_file', '-def', type=str, default="")
 parser.add_argument('-test_file', '-tef', type=str, default="")
 
 parser.add_argument('-max_length', '-l', type=int, default=24)
-parser.add_argument('-epochs', '-ep', type=int, default=10)
-parser.add_argument('-learning_rate', '-lr', type=float, default=1e-4)
-parser.add_argument('-batch_size', '-bsz', type=int, default=256)
+parser.add_argument('-epochs', '-ep', type=int, default=20)
+parser.add_argument('-learning_rate', '-lr', type=float, default=2e-4)
+parser.add_argument('-batch_size', '-bsz', type=int, default=512)
 parser.add_argument('-device', '-dev', type=str, default='cuda')
 parser.add_argument('-seed', type=int, default=110)
 
@@ -113,4 +113,4 @@ if args.mode == "inf":
     optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
     trainer = Trainer(model, args.device, optimizer)
 
-    trainer.inference(test_loader, f"{out_dir}/ours/yelp_test_{args.type}.tsf", vb)
+    trainer.inference(test_loader, f"{out_dir}/ours/{args.dataset}_test_{args.type}.tsf", vb)
