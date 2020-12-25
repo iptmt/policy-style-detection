@@ -143,6 +143,7 @@ class InsertLMTrainer:
             self.optimizer.step()
 
             self.clock.update({"Lv": loss_v.item(), "Lp": loss_p.item()})
+            time.sleep(0.03)
     
     def evaluate(self, dl):
         self.ilm.eval()
@@ -227,6 +228,7 @@ class MLMTrainer:
             self.optimizer.step()
 
             self.clock.update({"Loss": loss.item()})
+            time.sleep(0.03)
 
     def evaluate(self, dl):
         self.mlm.eval()
@@ -272,6 +274,7 @@ class RNNTrainer:
             self.optimizer.step()
 
             self.clock.update({"Loss": loss.item()})
+            time.sleep(0.03)
     
     def evaluate(self, dl):
         self.rnn.eval()
