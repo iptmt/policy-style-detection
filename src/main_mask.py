@@ -28,11 +28,11 @@ data = sys.argv[1]
 logger.info(f"data: {data}")
 mode = sys.argv[2]
 logger.info(f"mode: {mode}")
-# delta = float(sys.argv[3])
-# logger.info(f"delta: {delta}")
 
 # parameters
 #=============================================================#
+task_name = "wo_ctx"
+
 epochs_clf = 10
 epochs_masker = 50
 batch_size = 512
@@ -89,10 +89,10 @@ if mode == "train":
         logger.info(f"Dev Acc: {acc}")
         if acc > best_acc:
             logger.info(f"Update clf dump {int(acc*1e4)/1e4} <- {int(best_acc*1e4)/1e4}")
-            torch.save(clf.state_dict(), f"../dump/clf_{data}_{delta}.pth")
+            torch.save(clf.state_dict(), f"../dump/clf_{data}_{task_name}.pth")
             best_acc = acc
         logger.info("=" * 50)
-    clf.load_state_dict(torch.load(f"../dump/clf_{data}_{delta}.pth"))
+    clf.load_state_dict(torch.load(f"../dump/clf_{data}_{task_name}.pth"))
 
     del train_dataset, dev_dataset, train_loader, dev_loader
 
@@ -114,7 +114,7 @@ if mode == "train":
         r = model_trainer.evaluate(dev_loader)
         if r > best_r:
             logger.info(f"Update masker dump {int(r*1e4)/1e4} <- {int(best_r*1e4)/1e4}")
-            torch.save(masker.state_dict(), f"../dump/masker_{data}_{delta}.pth")
+            torch.save(masker.state_dict(), f"../dump/masker_{data}_{task_name}.pth")
             best_r = r
         logger.info("=" * 50)
     #=============================================================#
@@ -126,8 +126,8 @@ elif mode == "inf":
     dev_loader = DataLoader(dev_dataset, batch_size=batch_size, shuffle=False, collate_fn=StyleDataset.collate_fn)
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, collate_fn=StyleDataset.collate_fn)
 
-    masker.load_state_dict(torch.load(f"../dump/masker_{data}_{delta}.pth"))
-    clf.load_state_dict(torch.load(f"../dump/clf_{data}_{delta}.pth"))
+    masker.load_state_dict(torch.load(f"../dump/masker_{data}_{task_name}.pth"))
+    clf.load_state_dict(torch.load(f"../dump/clf_{data}_{task_name}.pth"))
     model_trainer = MaskTrainer(masker, clf, dev, rollouts, gamma, None, None)
 
     # Inference
