@@ -28,13 +28,14 @@
 - Copy
 > 2.5 / 0.0561 / 100 --- 14.94 / 0.2342 / 100
 
-
 # Ablation Study
-wo / context
+- wo / context
 > 83 / 0.111 / 34.7
-wo / history
+- wo / history
 > 86.6 / 0.788 / 31.4
-wo / token
+- wo / token
 > 84.8 / 0.1125 / 30.7
-wo / noise
+- wo / noise
 > 86.9 / 0.0513 / 31.1
+- wo / pretrain
+> 92.2 / 0.0395 / 28.8
