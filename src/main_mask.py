@@ -31,7 +31,7 @@ logger.info(f"mode: {mode}")
 
 # parameters
 #=============================================================#
-task_name = "wo_ctx"
+task_name = "0.65"
 
 epochs_clf = 10
 epochs_masker = 50
