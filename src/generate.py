@@ -34,7 +34,7 @@ parser.add_argument('-test_file', '-tef', type=str, default="")
 
 parser.add_argument('-max_length', '-l', type=int, default=24)
 parser.add_argument('-epochs', '-ep', type=int, default=20)
-parser.add_argument('-learning_rate', '-lr', type=float, default=2e-4)
+parser.add_argument('-learning_rate', '-lr', type=float, default=3e-4)
 parser.add_argument('-batch_size', '-bsz', type=int, default=512)
 parser.add_argument('-device', '-dev', type=str, default='cuda')
 parser.add_argument('-seed', type=int, default=110)
